@@ -1,0 +1,38 @@
+{
+  "name": "@augmentor/app-sdk",
+  "version": "0.1.0-preview.1",
+  "description": "Connect trusted applications to the maintained Augmentor agent through DSH",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./browser": "./src/browser.mjs",
+    "./dsh": "./src/dsh.mjs",
+    "./manifest.schema.json": "./schema/manifest.schema.json"
+  },
+  "bin": {
+    "augmentor-app": "./bin/augmentor-app.mjs"
+  },
+  "files": [
+    "src",
+    "bin",
+    "schema",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ManoloRemiddi/augmentor-app-sdk.git"
+  }
+}

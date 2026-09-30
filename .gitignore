@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+*.tgz
+output/
+.env
+*.token
+*.sqlite*
+*.log
