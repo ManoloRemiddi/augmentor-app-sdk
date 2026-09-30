@@ -12,9 +12,11 @@ const ctx=new Context();let calls=0;
 try{
  await ctx.plugin(SystemPrompt).await();await ctx.plugin(ToolRuntime).await();
  const agent={id:'synthetic'};const scoped=createScope(ctx,agent);agent.ctx=scoped.ctx;
+ // Match Augmentor: its existing preset selects native presentation first.
+ await scoped.ctx.plugin({inject:['tools'],apply:ctx=>ctx.tools.presentAs('native')}).await();
  await scoped.ctx.plugin({inject:['tools'],apply:ctx=>registerDshTools(ctx,{defineTool,definitions:[['sdk_test','Synthetic schema proof',{names:{type:'array',items:{type:'string'},required:true}}]],execute:async(_name,args)=>{calls++;return {count:args.names.length};}})}).await();
  const a=await ctx.tools.execute({name:'sdk_test',arguments:{names:['a','b']},agent,callId:'a',signal:new AbortController().signal});
  const b=await ctx.tools.execute({name:'sdk_test',arguments:{names:[42]},agent,callId:'b',signal:new AbortController().signal});
  assert.equal(a.isError,false);assert.equal(b.isError,true);assert.equal(calls,1);
- console.log(JSON.stringify({realDshToolRegistration:true,validArrayAccepted:true,invalidArrayNeverExecuted:true}));
+ console.log(JSON.stringify({realDshToolRegistration:true,existingPresetPresentationPreserved:true,validArrayAccepted:true,invalidArrayNeverExecuted:true}));
 }finally{await ctx.fiber.dispose();}

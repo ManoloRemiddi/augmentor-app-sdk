@@ -26,7 +26,8 @@ export async function registerDshTools(ctx,{definitions,execute,defineTool:facto
         return JSON.stringify(value);
       }}));
   }
-  ctx.tools.presentAs('native');
+  // The Augmentor preset owns presentation. DSH rejects a second declaration,
+  // including an identical mode, in the same composition.
 }
 export function createToolClient({url,tokenFile,timeoutMs=25000,maxBytes=4*1024*1024,fetchImpl=fetch}){
   const target=new URL(url);
