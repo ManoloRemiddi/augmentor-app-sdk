@@ -15,7 +15,11 @@ The initial target is a single owner installing trusted applications on Linux, i
 
 ## Install
 
-During the private preview, clone this repository using your authorized GitHub account and build the package:
+For the exact deployed package, download the archive and checksum from the
+[private preview 2 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.2).
+Use the current documentation on main for deployment notes. To build source
+yourself, clone this repository using your authorized GitHub account (check out
+`v0.1.0-preview.2` to reproduce that release), then:
 
 ```sh
 npm ci --ignore-scripts
@@ -23,7 +27,7 @@ npm test
 npm pack
 ```
 
-Install the resulting `augmentor-app-sdk-0.1.0-preview.1.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
+Install the resulting `augmentor-app-sdk-0.1.0-preview.2.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
 
 ```js
 import {AugmentorClient} from '@augmentor/app-sdk';

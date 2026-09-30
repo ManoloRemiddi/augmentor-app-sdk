@@ -2,7 +2,8 @@
 # Developer preview handoff
 
 See [qualification](QUALIFICATION.md) for exact source revisions, the private
-release, the selected compatible runtime and the existing apps' pending cutover.
+release, selected runtime and the completed live cutover of both existing apps.
+Preview 2 fixes the live DSH composition issue found during deployment.
 
 30 September 2026. Scope agreed by the owner: dedicated private SDK repository; fortify existing app integration first; DSH only; existing private/commercial-use and resale-agreement license; optional experimental Resonant Voice; cloud voice later. The independent third application is the owner's blind test and must remain independent.
 
@@ -40,3 +41,13 @@ matching Debian QtTest module extracted into a temporary test directory; no
 installed speech or Qt environment was changed. The tool guard proof passes
 against both the installed DSH runtime and the locked `0.1.5-rc.1` package.
 These are contract and regression checks, not real-model or acoustic acceptance.
+
+
+## Live cutover follow-up
+
+Both existing apps now use preview 2 on their normal live services. See the current
+section of QUALIFICATION.md for the exact package, app commits, managed runtime,
+NAS image and backups. Real model/tool/browser, history isolation, cancellation
+and voice preference checks passed. Use a new chat for the complete SDK policy;
+already loaded legacy DSH agents retain their prior composition. The shared
+harness was not restarted. The owner's independent third app remains untouched.

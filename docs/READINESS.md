@@ -34,7 +34,7 @@ NAS tunnel while the model host remains local.
 | --- | --- |
 | App copies of native transport and UI wrapper | Shared package; product-owned UI and native host |
 | Implicit runtime assumptions | Versioned manifest and `augmentor-app/1` negotiation |
-| Specialist role inherits broad tools | Exact grants enforced by a monotonic DSH guard |
+| Specialist role inherits broad tools | Exact grants in the assembled model catalog and a monotonic DSH execution guard |
 | Shared settings reachable from app | Runtime administration denied at the workspace boundary |
 | Session or memory identity changes during migration | Stable preset/cwd/memory identity, collision checks |
 | Partial preset/profile installation | Lock, journal, before-images and crash recovery |
@@ -52,8 +52,8 @@ their tests do not prove every existing backend implements the same guarantees.
 1. The owner independently builds the third application without this agent's
    involvement. That is the adoption test; fixtures and these two migrations
    do not establish third-party usability.
-2. Promote the existing application migrations through their documented idle
-   rollout and rollback checks. Regression tests alone do not claim deployment.
+2. The two existing apps are deployed and their real model/tool/browser routes
+   qualified on Linux. Preserve the recorded rollback procedure for further updates.
 3. Exercise representative real tasks, cancellation, sleep/reconnect and unknown
    outcomes in each adopted application, including its own OAuth and data rules.
 4. Qualify additional operating systems and distribution methods before claiming
