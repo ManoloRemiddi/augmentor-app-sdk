@@ -93,7 +93,7 @@ The owner authorized deploying both existing apps on 30 September 2026.
 | YouTube dashboard | `8d4c39f7c697b4a533d2015443e804449bf230f3`, merged PRs #1 and #2 |
 | Sponsor desk | `300aac14efc245c87315742d5adfee06004d5ccb`, app 3.1.5/schema 2, merged PRs #1 and #2 |
 | Augmentor foundation | merged PR #23 |
-| Product live corrections | `a400564d19d221366297a75701f5ff635bd084d0`, PR #24 |
+| Product live corrections | `a400564d19d221366297a75701f5ff635bd084d0`, merged PR #24 (merge `b70d9651812ca1cffe6ba649e7527103fd787740`) |
 
 [Preview 2 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.2)
 archive SHA-256:
@@ -138,6 +138,12 @@ in place. Shared DSH, memory, speech and unrelated native windows were not resta
 
 ### Live evidence
 
+- Product [PR #24](https://github.com/ManoloRemiddi/augmentor-agent/pull/24)
+  merged after all checks passed: [Linux runtime, Debian, installed packages and Browser package](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/36703368773),
+  [macOS 14 and 26 bundled runtimes](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/36703368382),
+  and GitGuardian. Both app migration, correction and deployment-documentation
+  PRs are merged. SDK [preview 2 CI](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/36701227503)
+  passed; the downloaded release archive matched the deployed archive checksum.
 - Fresh locked app installs and complete suites pass: YouTube 90; Sponsor 124;
   SDK 12. Production audits report zero vulnerabilities. Product has 193 passing
   Node tests and 44 Browser tests; all 11 embedding/workspace tests pass after the final layout change.
