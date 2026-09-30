@@ -7,7 +7,7 @@
 | --- | --- |
 | SDK package | `9cb8faaaead57e379fdc5aa2a973497a4e98b828`, tag `v0.1.0-preview.1` |
 | Product foundation | `eac2615d47c78711c0e5c37041556ade9d4b41ee`, [PR #23](https://github.com/ManoloRemiddi/augmentor-agent/pull/23) |
-| YouTube migration | `358350d`, [PR #1](https://github.com/ManoloRemiddi/youtube-dashboard/pull/1) |
+| YouTube migration | `e42db17`, [PR #1](https://github.com/ManoloRemiddi/youtube-dashboard/pull/1) |
 | Sponsor desk migration | `b43561a`, [PR #1](https://github.com/ManoloRemiddi/sponsor-desk/pull/1) |
 
 The [private preview release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.1)
@@ -25,6 +25,9 @@ on main do not change its package bytes. No npm publication has been made.
   skips). The final voice-preference correction additionally passes all 11
   workspace/embedding tests. Its native negotiation was exercised against the
   staged artifact with a temporary preference, without enabling real audio.
+  The final source passes the complete [Linux/package workflow](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/36690786169)
+  and [macOS 14/26 regression workflow](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/36690786156).
+  Those existing product suites do not qualify fresh SDK installation on macOS.
 - Real DSH/Cordis: the final guard prevents an ungranted tool body from running
   even when a cooperative hook allows it. An unrelated agent retains its own
   access. The proof passes against both installed DSH and locked `0.1.5-rc.1`.
@@ -32,7 +35,7 @@ on main do not change its package bytes. No npm publication has been made.
   array argument executes; an invalid array never reaches the implementation.
   Reproduce from this checkout with `node scripts/proof-dsh.mjs /path/to/dsh-package`.
 - Both app migrations pass a clean locked dependency install and their complete
-  suites: YouTube 89 tests; Sponsor desk 124 tests. Both validate their manifests
+  suites: YouTube 90 tests; Sponsor desk 124 tests. Both validate their manifests
   and report zero audited dependency vulnerabilities.
 - The packaged SDK connected through the actual staged native host to the
   existing DSH service. Workspace-scoped history and denial of shared permission
@@ -65,6 +68,8 @@ they adopt the selection on their next normal start.
 The existing YouTube and Sponsor desk application services, authoritative stores
 and registered profiles have **not** been migrated. Their reviewed source
 changes are in the linked PRs, with package provenance and rollout instructions.
+The YouTube migration also rejects old job attempts after retry or UI list truncation,
+and refuses to infer stoppage from an absent row in a bounded session list.
 These legacy profiles do not receive new SDK grants until explicitly registered
 from their canonical application checkout. Already instantiated legacy agents
 are not retroactively restricted. The selected product supports registration of
