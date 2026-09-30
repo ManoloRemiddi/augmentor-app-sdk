@@ -11,6 +11,7 @@ The initial target is a single owner installing trusted applications on Linux, i
 - [Connection contract](docs/CONTRACT.md): identities, permissions, errors, recovery and data ownership.
 - [Security and trust](docs/SECURITY.md): enforced boundaries and limits.
 - [Qualification and handoff](docs/HANDOFF.md): reproducible tests and remaining gates.
+- [Readiness](docs/READINESS.md) and [exact qualification](docs/QUALIFICATION.md): feasibility, release evidence and rollout status.
 
 ## Install
 

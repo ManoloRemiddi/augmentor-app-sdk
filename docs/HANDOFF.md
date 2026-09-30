@@ -1,6 +1,9 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+See [qualification](QUALIFICATION.md) for exact source revisions, the private
+release, the selected compatible runtime and the existing apps' pending cutover.
+
 30 September 2026. Scope agreed by the owner: dedicated private SDK repository; fortify existing app integration first; DSH only; existing private/commercial-use and resale-agreement license; optional experimental Resonant Voice; cloud voice later. The independent third application is the owner's blind test and must remain independent.
 
 Source components: manifest validation, runtime negotiation, bounded native client, authenticated HTTP/WebSocket proxy, framework-neutral maintained-UI mount, DSH tool registration, bounded tool HTTP client, optional durable operation receipts and job leases, registration/validation/doctor/scaffold CLI.
