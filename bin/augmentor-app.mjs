@@ -24,7 +24,11 @@ plan previews identity and grants without writing credentials or profiles.
 register changes private workspace/preset configuration; it does not restart services.
 Use the local CLI from your installed package. Read docs/AGENT-INTEGRATION.md.`;
 const [command,...args]=process.argv.slice(2);
-const readJSON = file => JSON.parse(readFileSync(resolve(file),'utf8'));
+const readJSON = file => {
+  const source=readFileSync(resolve(file),'utf8');
+  try {return JSON.parse(source);}
+  catch {check(false,'INVALID_JSON',`Invalid JSON in ${file}; file contents withheld`);}
+};
 function installation(manifestPath, optionsPath) {
   check(manifestPath && optionsPath, 'INVALID_REQUEST', 'Provide manifest.json and private-install.json');
   const manifestFile=resolve(manifestPath),options=readJSON(optionsPath);

@@ -64,6 +64,9 @@ test('plan reveals intended grants while keeping secrets private and creates no 
   assert.match(run('plan','augmentor.app.json','install.json').stderr,/declared plugin IDs/);
   writeFileSync(join(root,'install.json'),JSON.stringify({...options,orgin:options.origin}));
   assert.match(run('plan','augmentor.app.json','install.json').stderr,/Unknown installation option/);
+  writeFileSync(join(root,'install.json'),'do-not-print-fixture-secret');
+  const invalid=run('plan','augmentor.app.json','install.json');
+  assert.match(invalid.stderr,/INVALID_JSON/);assert.doesNotMatch(invalid.stderr,/do-not-print-fixture-secret/);
 });
 test('doctor only establishes the selected contract and register fails before token creation without runtime',t=>{
   const {root,run}=fixture(t);assert.equal(run('init','.').status,0);
