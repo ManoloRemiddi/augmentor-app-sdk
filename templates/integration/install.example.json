@@ -1,0 +1,10 @@
+{
+  "origin": "http://127.0.0.1:8000",
+  "tokenFile": "/absolute/path/to/your-app/augmentor/private/proxy.token",
+  "toolConfig": {
+    __PLUGIN_ID_JSON__: {
+      "url": "http://127.0.0.1:8000/api/augmentor/tool",
+      "tokenFile": "/absolute/path/to/your-app/augmentor/private/app-agent.token"
+    }
+  }
+}

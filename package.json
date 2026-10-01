@@ -1,6 +1,6 @@
 {
   "name": "@augmentor/app-sdk",
-  "version": "0.1.0-preview.2",
+  "version": "0.1.0-preview.3",
   "description": "Connect trusted applications to the maintained Augmentor agent through DSH",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
@@ -20,13 +20,16 @@
     "src",
     "bin",
     "schema",
+    "templates",
     "docs",
+    "AGENTS.md",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "test:package": "node --test test/package/consumer.test.mjs"
   },
   "dependencies": {
     "ajv": "8.20.0"

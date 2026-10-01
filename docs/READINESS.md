@@ -70,3 +70,10 @@ cloud implementation or qualification is included now. Pi and Codex are deferred
 The source is ready for a developer preview. General availability remains gated
 by the independent adoption and deployment evidence above. See
 [exact qualification and rollout status](QUALIFICATION.md).
+
+Preview 3 improves agent adoption with a self-contained [entry guide](AGENT-INTEGRATION.md),
+tested packaged scaffold, complete API/acceptance/troubleshooting guides,
+non-executing file validation and read-only registration planning. A clean-consumer
+fixture checks the shipped package in CI. This reduces undocumented integration
+work; it does not establish the independent third-app result or qualify a fresh
+managed-runtime installer. That runtime remains a required prerequisite.

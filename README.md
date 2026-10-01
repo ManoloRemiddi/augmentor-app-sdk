@@ -3,10 +3,12 @@
 
 Connect a trusted application to the maintained Augmentor agent. Embed its existing interface, provide an application role and tools, and use the same records from the UI and agent.
 
-**0.1.0 preview. DSH only.** Requires Node 24.14+ and a compatible managed Augmentor runtime exposing `augmentor-app/1`. This package does not include the Augmentor UI, model runtime, Google credentials or another agent loop. A stock older Augmentor installation is not sufficient; `augmentor-app doctor` reports that explicitly.
+**0.1.0-preview.3. DSH only.** Requires Node 24.14+ and a compatible managed Augmentor runtime exposing `augmentor-app/1`. This package does not include the Augmentor UI, model runtime, Google credentials or another agent loop. A stock older Augmentor installation is not sufficient; `augmentor-app doctor` reports that explicitly.
 
 The initial target is a single owner installing trusted applications on Linux, including an application backend reached through a private NAS tunnel. This is not a sandbox for untrusted JavaScript or a multi-tenant hosting system. Pi and Codex support are outside this preview. Voice is experimental, disabled by default and independently switchable per workspace; cloud voice providers, including OpenAI, are deferred.
 
+- **[Start here: agent integration guide](docs/AGENT-INTEGRATION.md)**: a self-contained workflow and a ready-to-use task for a coding agent.
+- [API reference](docs/API.md), [acceptance checklist](docs/ACCEPTANCE.md) and [troubleshooting](docs/TROUBLESHOOTING.md).
 - [Quick start](docs/QUICKSTART.md): package, runtime, manifest, registration, tools and embed.
 - [Connection contract](docs/CONTRACT.md): identities, permissions, errors, recovery and data ownership.
 - [Security and trust](docs/SECURITY.md): enforced boundaries and limits.
@@ -15,31 +17,36 @@ The initial target is a single owner installing trusted applications on Linux, i
 
 ## Install
 
-For the exact deployed package, download the archive and checksum from the
-[private preview 2 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.2).
+For new integrations, download the archive and checksum from the
+[private preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3).
+The two qualified live apps remain on preview 2; this onboarding release does not
+redeploy them. The repository and release require authorized GitHub access.
 Use the current documentation on main for deployment notes. To build source
 yourself, clone this repository using your authorized GitHub account (check out
-`v0.1.0-preview.2` to reproduce that release), then:
+`v0.1.0-preview.3` to reproduce that release), then:
 
 ```sh
 npm ci --ignore-scripts
 npm test
+npm run test:package
 npm pack
 ```
 
-Install the resulting `augmentor-app-sdk-0.1.0-preview.2.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
+Install the resulting `augmentor-app-sdk-0.1.0-preview.3.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
 
-```js
-import {AugmentorClient} from '@augmentor/app-sdk';
-const agent = new AugmentorClient({profile: 'my-app'});
-await agent.connect();
-const sessionId = crypto.randomUUID();
-await agent.createSession(sessionId);
-// Persist the operation ID BEFORE submission. Never repeat an unknown outcome.
-await agent.prompt({sessionId, operationId: crypto.randomUUID(), text: 'Read the selected record.'});
+From your application directory after installing the package:
+
+```sh
+./node_modules/.bin/augmentor-app init . --id my-app --name 'My app'
+./node_modules/.bin/augmentor-app validate augmentor.app.json
+./node_modules/.bin/augmentor-app doctor
 ```
 
-The application must be registered first. Read the quick start for the complete sequence. A prompt acknowledgment means accepted submission, not verified task completion.
+The scaffold includes a read-only tool, authenticated backend wiring, maintained
+panel mount and private-config example. Supply the application's real record
+reader and owner-session check, then follow the [complete quick start](docs/QUICKSTART.md).
+`plan` previews registration without changing state. Doctor checks the selected
+runtime contract; actual readiness requires the documented live checks.
 
 ## Ownership
 

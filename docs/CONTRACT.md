@@ -3,6 +3,11 @@
 
 Protocol: `augmentor-app/1`. Manifest schema: `1`. Supported harness: `dsh`. Versions with a different protocol major fail closed. Preview package patch versions may add optional fields; required semantic changes require a protocol revision.
 
+Developer CLI and scaffold behavior is documented in [API](API.md). Preview 3
+keeps this runtime protocol unchanged. File preflight never imports app modules;
+registration planning and runtime descriptor checks do not certify a running
+integration. The [acceptance checklist](ACCEPTANCE.md) owns that evidence boundary.
+
 ## Identity and authority
 
 Application ID identifies a developer integration. Workspace/profile ID identifies one owner-installed instance. DSH preset plus canonical cwd identifies its sessions. Memory uses an explicit person/project binding. Session ID belongs to DSH. Request/operation IDs identify submissions, and job attempt IDs fence work across retries. These identifiers are not interchangeable credentials.

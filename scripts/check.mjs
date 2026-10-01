@@ -1,4 +1,16 @@
 // Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
 import {readdirSync} from 'node:fs';
+import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
-for(const dir of ['src','bin','scripts','test'])for(const name of readdirSync(dir).filter(n=>n.endsWith('.mjs'))){const r=spawnSync(process.execPath,['--check',dir+'/'+name],{stdio:'inherit'});if(r.status)process.exit(r.status);}
+function checkDirectory(dir) {
+  for (const entry of readdirSync(dir,{withFileTypes:true})) {
+    const file=join(dir,entry.name);
+    if(entry.isDirectory())checkDirectory(file);
+    else if(entry.name.endsWith('.mjs')) {
+      const result=spawnSync(process.execPath,['--check',file],{stdio:'inherit'});
+      if(result.error)throw result.error;
+      if(result.status)process.exit(result.status);
+    }
+  }
+}
+for(const dir of ['src','bin','scripts','test','templates'])checkDirectory(dir);
