@@ -256,3 +256,8 @@ Current access guides use anonymous source/release downloads. Earlier private
 repository references are historical. Published preview archives and tags remain
 immutable; licensing and runtime support are unchanged. Public source availability
 does not imply a public npm publication or a new live-app deployment.
+
+GitHub now reports `PUBLIC` / `private:false`. Anonymous requests verified the
+repository metadata, current agent guide and both preview 3 assets; the downloaded
+archive matched its published SHA-256 above. Access notes on all three existing
+releases were updated without changing their archives or tags.
