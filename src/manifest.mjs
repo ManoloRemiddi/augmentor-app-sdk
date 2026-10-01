@@ -1,5 +1,5 @@
 // Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
-import {readFileSync, realpathSync} from 'node:fs';
+import {readFileSync, realpathSync, statSync} from 'node:fs';
 import {resolve, relative, isAbsolute} from 'node:path';
 import Ajv from 'ajv';
 import {check, SDK_PROTOCOL} from './errors.mjs';
@@ -13,9 +13,19 @@ export function validateManifest(value) {
 }
 export function applicationPath(root, path) {
   check(typeof path === 'string' && !isAbsolute(path), 'INVALID_MANIFEST', 'Manifest files must use relative application paths');
-  const base = realpathSync(root), file = realpathSync(resolve(base, path)), rel = relative(base, file);
+  let base, file;
+  try {base = realpathSync(root); file = realpathSync(resolve(base, path));}
+  catch {check(false, 'INVALID_MANIFEST', `Manifest file does not exist: ${path}`);}
+  const rel = relative(base, file);
   check(rel && rel !== '..' && !rel.startsWith('../') && !isAbsolute(rel), 'INVALID_MANIFEST', 'Manifest file escapes the application directory');
+  check(statSync(file).isFile(), 'INVALID_MANIFEST', `Manifest entry is not a file: ${path}`);
   return file;
+}
+// Read-only preflight: resolve files without executing application modules.
+export function validateApplication(manifest, {root}) {
+  const m = validateManifest(manifest);
+  for (const path of [...m.instructions, ...m.tools.map(tool => tool.module)]) applicationPath(root, path);
+  return m;
 }
 export function workspaceProfile(manifest, options) {
   const m = validateManifest(manifest), {root, origin, tokenFile, toolConfig = {}, id = m.id, preset = 'augmentor-' + id, memory, legacyPresets = []} = options;

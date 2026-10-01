@@ -1,6 +1,29 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## Current onboarding release — 1 October 2026
+
+Preview 3 adds the [agent entry guide](AGENT-INTEGRATION.md), [API](API.md),
+[acceptance](ACCEPTANCE.md), [troubleshooting](TROUBLESHOOTING.md) and a rewritten
+[quick start](QUICKSTART.md). These are the entry path for an agent integrating
+a new application; prior conversation and private reference-app code are unnecessary.
+
+`init` now generates coherent read-only tool/backend/browser wiring plus private
+configuration guidance. The application must provide its real owner-session check
+and record reader. `validate` checks existing contained regular files without
+executing modules (`--schema-only` retains schema-only use). `plan` previews
+identity/grants without installing. `doctor` explicitly labels descriptor-only
+inspection, and `--help` / `--version` are available. The npm artifact includes
+AGENTS.md, all guides and templates.
+
+Run `npm run test:package` in addition to the source checks below. It packs and
+installs into a clean temporary consumer, repeats a locked install, generates the
+adapter, and exercises real HTTP/socket/tool paths with synthetic services and
+records. It never registers a real workspace or calls a model. The two live apps
+remain on preview 2; no new live app or UI/audio qualification is claimed here.
+
+## Existing integration record
+
 See [qualification](QUALIFICATION.md) for exact source revisions, the private
 release, selected runtime and the completed live cutover of both existing apps.
 Preview 2 fixes the live DSH composition issue found during deployment.
@@ -17,6 +40,7 @@ Augmentor runtime changes remain in its canonical repository: current-main integ
 npm ci --ignore-scripts
 npm test
 npm run check
+npm run test:package
 npm audit
 npm pack --dry-run
 ```

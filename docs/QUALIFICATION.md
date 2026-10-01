@@ -193,3 +193,38 @@ This qualifies the live connection and app regressions. It does not certify
 all editorial output, every external-account action, physical microphone/audio,
 OS suspend/resume or the owner's independent third-app adoption test. Voice is
 experimental and remains off by default; cloud voice, Pi and Codex remain deferred.
+
+
+## Agent onboarding: preview 3 — 1 October 2026
+
+This release improves the handoff to an agent working from the repository alone.
+It adds the agent entry workflow, API reference, acceptance and troubleshooting
+instructions; all are shipped in the package with AGENTS.md. The read-only
+integration scaffold includes a declared DSH tool, authenticated backend/proxy
+routing, maintained-panel mount and ignored private-configuration guidance.
+The app still supplies its real owner-session check and record reader.
+
+CLI help/version, non-executing file validation, registration planning and clearer
+descriptor-only doctor output remove assumptions from the earlier quick start.
+`validate` now rejects missing files, directory entries and escaping symlinks;
+`--schema-only` is explicit. Init preflights all output files and rejects symlink
+output directories. Plan omits private tool configuration and does not write
+credentials, register profiles or contact a model.
+
+Qualification on Node 24.19.0: all 18 source/CLI tests pass, including collisions,
+file containment, private-plan output and absent-runtime behavior. The package
+consumer test passes: build archive, inspect shipped files, install into a clean
+project, reinstall from its lockfile, generate the adapter, and exercise the
+installed SDK's tool schemas/client and generated backend over HTTP/WebSocket.
+It covers owner and app-agent authentication, credential separation/stripping,
+origin denial, undeclared tools, invalid/oversize input, authoritative fixture
+read/projection, missing records and sanitized backend errors. DSH defineTool and
+the upstream panel are synthetic in that consumer test. The separate real-DSH
+registration proof also passes against the installed DSH package, without a model
+request. Syntax checks and dependency audit pass (zero vulnerabilities).
+
+The protocol remains `augmentor-app/1`; no product changes or live application
+redeployments were performed. The two live apps retain the preview 2 evidence
+above. No new live model, browser layout, physical voice, fresh-machine runtime
+installation or independent third-app result is claimed. The owner still owns
+that independent adoption test. Preview 3 is developer-onboarding qualification.

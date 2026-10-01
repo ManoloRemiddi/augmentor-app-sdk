@@ -1,109 +1,215 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Integrate an application
 
-## 1. Prepare a compatible runtime
+Read [the agent entry guide](AGENT-INTEGRATION.md) first. These steps use an
+existing trusted single-owner Node application. The scaffold is integration code,
+not a separate reference app. Replace example IDs/ports with the target app's
+stable identity and actual origin. Preserve existing identities during migration.
 
-Install the SDK tarball in your application, then run `npx augmentor-app doctor`. It inspects the managed runtime descriptor without starting or changing a model. The required product feature is documented in Augmentor's `docs/APP-SDK.md`. A runtime missing `services/workspaces/sdk.json` is incompatible; do not bypass this by importing its internal version files.
+## 1. Install the pinned private package
 
-The product must have DSH configured, its normal Browser preset, the workspace installer, embedding service and existing memory companion. Its DSH tools runtime must provide the monotonic `guard()` API. Registering a profile does not restart shared DSH. The Linux embedding service uses loopback port 8872. This preview does not qualify native Windows/macOS SDK installation.
+Requirements: Node >=24.14, authorized GitHub access, an existing application
+package.json and a compatible managed Augmentor runtime on a Linux model host.
+From the target app directory, download the immutable preview release:
 
-## 2. Describe your application
-
-Run `npx augmentor-app init .` in a new application directory. The command refuses to overwrite existing files. Edit the generated manifest and role. This is a starter template, not a reference application.
-
-```json
-{
-  "schemaVersion": 1,
-  "id": "my-app",
-  "name": "My app",
-  "harness": "dsh",
-  "instructions": ["agent-role.md"],
-  "tools": [{"id":"my-app-tools","module":"tools.mjs","names":["my_app_read"]}],
-  "permissions": {"tools": ["memory_recall"]},
-  "voice": {"experimental": true, "enabled": false}
-}
+```sh
+mkdir -p vendor
+gh release download v0.1.0-preview.3 --repo ManoloRemiddi/augmentor-app-sdk --dir vendor --pattern 'augmentor-app-sdk-0.1.0-preview.3.*'
+(cd vendor && sha256sum --check augmentor-app-sdk-0.1.0-preview.3.sha256)
+npm install --save-exact ./vendor/augmentor-app-sdk-0.1.0-preview.3.tgz
+./node_modules/.bin/augmentor-app --help
 ```
 
-`permissions.tools` grants additional existing runtime tools by exact name. Your declared application tool names are added automatically. No wildcard or implicit shell/browser/delegation grant exists. Files must be relative paths resolving inside your application root. Source material is evidence, not authorization. Validate with `npx augmentor-app validate augmentor.app.json`.
+Keep the archive, checksum, lockfile and release provenance in the application's
+repository according to its private-source policy. Do not depend on an absolute
+path into another developer's SDK checkout. If building SDK source instead, use
+`npm ci --ignore-scripts`, `npm run check`, `npm test`, `npm run test:package`, then
+`npm pack`. Never replace a published release's bytes with a different local build.
 
-## 3. Implement your tools
+Preview 3 adds onboarding/validation/scaffolding; the two recorded live apps
+remain on preview 2. It is not necessary to redeploy them for documentation work.
 
-An installed tool plugin runs as trusted local code. Keep remote credentials in its server-side configuration, never in the manifest or browser.
+## 2. Check the selected runtime
+
+```sh
+./node_modules/.bin/augmentor-app doctor
+```
+
+Doctor reads the selected descriptor without starting/changing a model. It must
+report `compatible:true`, `augmentor-app/1` and DSH. It does **not** establish
+running service, profile, model or voice readiness. A stock old installation
+missing `services/workspaces/sdk.json` is incompatible.
+
+The product needs its configured DSH with the monotonic `guard()` API, normal
+Browser preset, workspace installer, embedding service and memory companion.
+See [product SDK setup](https://github.com/ManoloRemiddi/augmentor-agent/blob/main/docs/APP-SDK.md).
+Registration and native clients run on that model host. The local embedding
+upstream defaults to loopback port 8872. A backend on a private NAS also needs its
+existing private tunnel/socket routing; the SDK does not provision a network or
+runtime. When this prerequisite is absent, continue source/fixture work and report
+live qualification as blocked. Do not alter the owner's model/harness setup.
+
+## 3. Generate and adapt the integration
+
+```sh
+./node_modules/.bin/augmentor-app init . --id my-app --name 'My app'
+./node_modules/.bin/augmentor-app validate augmentor.app.json
+```
+
+Init preflights all outputs and refuses to overwrite files. It generates:
+
+| File | Application-owned responsibility |
+| --- | --- |
+| `augmentor.app.json` | Stable ID, DSH, role, exact tool names; no extra grants; voice off |
+| `augmentor/agent-role.md` | Purpose, vocabulary, read-only tasks and source trust |
+| `augmentor/tools.mjs` | DSH adapter: `my_app_read_record`, bounded ID input, record output schema |
+| `augmentor/server.mjs` | Proxy HTTP/upgrade routing and separately authenticated tool endpoint |
+| `augmentor/browser.mjs` | Maintained-panel mount through the app's frontend bundler |
+| `augmentor/install.example.json` | Placeholder installation options, containing no credentials |
+| `augmentor/.gitignore` | Excludes `private/` installation state |
+| `augmentor/INTEGRATION.md` | Task list for the consuming agent/developer |
+
+The starter tool reads `{id,version,title}` from your backend's `readRecord(id)`.
+Supply that callback from the real authoritative data store and enforce its
+record-access rules. It must return a current record or `null`, never fixture data
+in a live deployment. Adapt the backend projection and output schema together.
+The endpoint accepts only the declared read tool and bounded inputs. It strips
+other record fields from the response. Extend it deliberately for domain tasks.
+
+The role does not grant authority. `permissions.tools` adds existing runtime tools
+by exact name; application tool names are included automatically. No wildcard or
+implicit shell/browser/delegation grant exists. Files must remain inside the app
+root, including symlink resolution. The CLI validates files without executing them.
+
+## 4. Create private installation configuration
+
+There are three separate authorities: the owner's browser session, the app-agent
+backend token, and the proxy-to-Augmentor token. Do not reuse them.
+
+For this scaffold, create an ignored directory and a fresh app-agent token. This
+command refuses to overwrite an existing token:
+
+```sh
+mkdir -p augmentor/private
+chmod 700 augmentor/private
+node --input-type=module <<'JS'
+import {writeFileSync} from 'node:fs';
+import {randomBytes} from 'node:crypto';
+writeFileSync('augmentor/private/app-agent.token', randomBytes(32).toString('hex') + '\n', {mode:0o600, flag:'wx'});
+JS
+cp -n augmentor/install.example.json augmentor/private/install.json
+chmod 600 augmentor/private/install.json
+```
+
+Edit that private JSON. Set `origin` to the exact public app origin, e.g.
+`http://127.0.0.1:8000`, with no path or trailing slash. Set the tool URL to its
+`/api/augmentor/tool` route. Replace both placeholder token paths with absolute
+paths inside this app's `augmentor/private/`. The backend and DSH adapter must
+resolve the app-agent credential to the same value. Register will create the
+**different** proxy token at `tokenFile`; do not put either token in source or JS.
+
+For NAS deployment, paths refer to the filesystem of the process reading them:
+registration and DSH tool modules live on the model host, while the backend needs
+its own private credential mounts and proxy tunnel. Equal token values may need
+separately provisioned private paths. Do not assume a model-host absolute path
+exists inside a container. See [API options](API.md) and the app's deployment guide.
+
+Optional private keys: `root`, `descriptor`, `id`, `preset`, `memory`,
+`legacyPresets`. `root`/`descriptor` must be absolute. Existing integrations must
+preserve exact profile/preset/canonical cwd/memory identities and token references.
+No secret belongs in `augmentor.app.json`.
+
+## 5. Wire the backend and maintained UI
+
+The generated helper does not start a server. In your existing backend, construct
+it using the private installation options and the application's actual callbacks:
 
 ```js
-import {registerDshTools, createToolClient} from '@augmentor/app-sdk/dsh';
-export const name = 'my-app-tools';
-export const inject = ['tools'];
-export async function apply(ctx, config) {
-  await registerDshTools(ctx, {
-    definitions: [[
-      'my_app_read', 'Read one current application record.',
-      {id: {type: 'string', required: true}},
-      {type: 'object', required: ['id', 'version']}
-    ]],
-    execute: createToolClient({url: config.url, tokenFile: config.tokenFile})
-  });
-}
+import {createAppIntegration} from './augmentor/server.mjs';
+const integration = createAppIntegration({
+  profile: install.id ?? 'my-app',
+  origin: install.origin,
+  proxyTokenFile: install.tokenFile,
+  appAgentTokenFile: install.toolConfig['my-app-tools'].tokenFile,
+  authorizeOwner, // existing check of the owner's session; returns exactly true
+  readRecord     // existing authoritative reader: id -> {id,version,title} or null
+});
+// In the existing Node HTTP handler, before consuming the body:
+if (await integration.http(req, res)) return;
+// Continue the application's existing routing.
+// In its WebSocket upgrade handler:
+if (integration.upgrade(req, socket, head)) return;
+// Continue other known socket routes, or destroy unknown upgrades.
 ```
 
-The SDK validates declared arguments and optional output schemas. Prefer explicit object/array schemas; `type: 'json'` exists for compatibility and leaves domain validation to your backend. The backend receives `{name,args,sessionId,eventId,operationId}` over an authenticated POST. Both operation fields identify the same DSH tool call. **A new model tool call has a new operation ID**: your backend must also preserve domain identities and deduplicate externally meaningful actions. Do not infer authority merely from `sessionId`; the server token identifies this trusted application adapter. This is not a multi-user identity protocol.
+Here `install`, `authorizeOwner` and `readRecord` are your app's private config,
+auth check and record reader, not SDK globals. If using Express or another
+framework, route raw `/augmentor/` and `/api/augmentor/tool` requests before a body
+parser consumes them; preserve the existing app router and server upgrade event.
+Configure bounded HTTP request/header timeouts on the owning server. For a
+private local-only app, use its documented owner access policy. Never use
+`authorizeOwner: () => true` for a remotely reachable app.
 
-The backend must authenticate the agent token, validate the operation against its own rules, enforce current revisions and source versions, and produce a durable result. Keep owner-only endpoints separate. Saving a draft must not call a send endpoint. Expose only the data required for the requested operation.
+`socketPath` optionally routes the proxy to an existing private Unix tunnel;
+otherwise upstream is loopback 8872. Credentials stay server-side. The app-agent
+POST envelope is `{name,args,sessionId,eventId,operationId}`; event and operation
+IDs identify the same DSH tool call, not an owner login. A new model tool call has
+a new operation ID, so writes also need stable domain identities and app-owned
+idempotency/revision rules. The read-only starter sends nothing externally.
 
-## 4. Register private installation details
+In the app's frontend, bundle `augmentor/browser.mjs` normally:
 
-Create an ignored mode-0600 installation file containing `origin` and `toolConfig`:
-
-```json
-{
-  "origin": "http://127.0.0.1:8000",
-  "toolConfig": {
-    "my-app-tools": {
-      "url": "http://127.0.0.1:8000/api/agent/tool",
-      "tokenFile": "/absolute/private/path/app-agent.token"
-    }
-  }
-}
+```html
+<div id="agent" style="height: 600px"></div>
 ```
-
-Your backend creates and validates the app-agent credential. It is different from the embedding proxy credential. Run `npx augmentor-app register augmentor.app.json /absolute/path/private-install.json`. Registration generates a private proxy token if needed and delegates preset composition to the selected product's transactional installer. No model settings, credentials or services are restarted.
-
-Optional private fields: `root`, `descriptor`, `id`, `preset`, `memory`, `legacyPresets`, and `tokenFile`. Existing integrations must preserve their exact profile/preset/cwd/memory identities. The runtime rejects accidental identity changes and cross-workspace collisions. Profiles are machine-specific installation state; never commit them. A crash leaves a recovery instruction; use the selected product's `scripts/install-workspace-profile.mjs --recover` only after its installer has stopped.
-
-## 5. Mount the maintained interface
-
-On your backend, route `/augmentor/` HTTP requests and WebSocket upgrades through `createProxy`. Pass `profile`, the exact public `origin`, `tokenFile`, and an `authorize(req)` callback that checks your owner session. The callback must return exactly `true`. A private tunnel or local-only app may use its documented owner access policy instead. Remote network binding needs actual user authentication.
 
 ```js
-import {createProxy} from '@augmentor/app-sdk';
-const proxy = createProxy({profile:'my-app', origin, tokenFile, authorize: ownerSessionIsValid});
-// Within your authenticated request router:
-// proxy.http(req, res)
-// Within its WebSocket upgrade router:
-// proxy.upgrade(req, socket, head)
+import {mountAppAgent} from './augmentor/browser.mjs';
+const panel = mountAppAgent(document.querySelector('#agent'), {
+  onStatus: status => { /* reflect status.online / status.busy */ },
+  onNavigate: hash => { /* handle the app's allowed navigation hashes */ }
+});
+panel.setContext({view: 'records', recordId: 'selected-id', version: 3});
+// On component teardown: panel.destroy();
 ```
 
-`socketPath` supports the private NAS deployment pattern; otherwise the upstream is loopback port 8872. Never expose its bearer token in URLs or JavaScript. Exact Host/Origin checks apply in addition to owner authorization.
+If there is no bundler, serve only the SDK's `src/browser.mjs` at an authenticated
+same-origin static route and import `mountAugmentor` from that URL. Do not expose
+all of node_modules. Context is a bounded hint; tools reread actual records.
+Augmentor owns chat rendering/history. Default settings opens the maintained
+settings page in a tab; `onSettings(url)` can use the app's own dialog.
 
-Bundle `@augmentor/app-sdk/browser`, or serve that single browser module through your authenticated static router. Give the container a real height:
+## 6. Preview, register and test
 
-```js
-import {mountAugmentor} from '@augmentor/app-sdk/browser';
-const panel = mountAugmentor({container: document.querySelector('#agent'), onStatus, onNavigate});
-panel.setContext({view:'records', recordId:'selected-id', version:3});
-// On teardown: panel.destroy()
+```sh
+./node_modules/.bin/augmentor-app validate augmentor.app.json
+./node_modules/.bin/augmentor-app plan augmentor.app.json augmentor/private/install.json
+./node_modules/.bin/augmentor-app register augmentor.app.json augmentor/private/install.json
 ```
 
-Context is a bounded hint, not trusted record contents or permission. Tools must reread authoritative state. `onSettings` may open the maintained settings page in your dialog; by default it opens a separate tab. No custom chat renderer is necessary.
+Review the plan's exact grants, cwd, memory and origin before registration. Plan
+writes nothing, omits private tool configuration, and does not check installed
+collisions or running readiness. Registration delegates to the product's
+transactional installer and does not restart services. If interrupted, follow
+[recovery](TROUBLESHOOTING.md); do not run another installer against a live one.
 
-## 6. Run background work
+Start/reload the app through its own normal deployment flow. Use **New chat** for
+the complete SDK policy. Ask for a selected harmless record by ID and verify the
+real backend/tool result. Run [acceptance](ACCEPTANCE.md), including auth denials,
+workspace isolation, Stop and history after reload. Keep fixture versus live
+results distinct. A prompt acknowledgment is not verified completion.
 
-Use `AugmentorClient` to create a dedicated session and submit with a persisted operation ID. `call()` exposes supported product commands for existing adapters, while `prompt`, `createSession`, `listSessions`, and `cancel` cover common operations. Listen for `event` and `disconnected` without interpreting connection loss as task failure. Call `close()` when disposing the client. After an unexpected disconnect, `connect()` can create a new transport but never replays a request.
+## Optional background work and voice
 
-Use your existing durable queue, or optional `JobStore`. Persist a job, claim an attempt, heartbeat its lease, and give that exact attempt/session to application tools. Reject writes from cancelled, superseded or unrelated attempts. A stale lease becomes `interrupted`; it does not authorize a retry. `retry` requires the application to verify the old execution has stopped. `finish` requires an application validator that rereads saved outputs. Cancellation of a queue record and cancellation of DSH are separate operations; coordinate both and show uncertainty when DSH does not acknowledge.
+Use `AugmentorClient` for dedicated background sessions. Persist the session ID,
+operation ID and input before dispatch. Unknown outcomes require reconciliation,
+not resubmission. Your scheduler/database owns attempt fencing, current source
+versions and saved-output validation. `OperationStore` and `JobStore` are optional
+helpers; see their exact behavior in [API](API.md). Queue cancellation and DSH
+cancellation are separate; verify prior stoppage before a retry.
 
-`OperationStore` records an unknown receipt before a side effect. Identical retries return a confirmed result or require reconciliation. It cannot make an arbitrary remote service exactly-once. For atomic local record updates, retain revision checking and idempotency in your application database transaction.
-
-## Experimental voice
-
-Manifest voice is disabled by default. The maintained embedded Settings page offers a workspace-specific experimental toggle. Reopen the panel after changing it. It requires the existing Resonant Voice installation and uses that host's audio devices. It does not move models, install weights, change global voice configuration, or capture a remote client's microphone. Cloud voice is a future provider integration.
+The maintained Settings page provides a workspace-specific experimental voice
+toggle. Reopen the panel after changing it. Resonant Voice must already exist;
+it uses the host's devices, not a remote browser microphone. The SDK does not
+install weights, move models or change global audio settings. Cloud voice is
+deferred. Leave voice off for initial integration tests.
