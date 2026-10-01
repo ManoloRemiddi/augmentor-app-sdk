@@ -14,7 +14,7 @@ historical evidence; it does not describe the current app rollout.
 | YouTube migration | `e42db17`, [PR #1](https://github.com/ManoloRemiddi/youtube-dashboard/pull/1) |
 | Sponsor desk migration | `b43561a`, [PR #1](https://github.com/ManoloRemiddi/sponsor-desk/pull/1) |
 
-The [private preview release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.1)
+The [preview release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.1)
 contains the package and checksum file. The downloaded release asset was compared
 with the package used by both migrations. SHA-256:
 `44b7bb14e551d875e60020c6c7ac6eb00593687c7918c0b49e802dcacc2b399d`.
@@ -241,3 +241,18 @@ redeployments were performed. The two live apps retain the preview 2 evidence
 above. No new live model, browser layout, physical voice, fresh-machine runtime
 installation or independent third-app result is claimed. The owner still owns
 that independent adoption test. Preview 3 is developer-onboarding qualification.
+
+
+## Public repository — 1 October 2026
+
+The owner authorized public visibility for this SDK repository and its existing
+release assets. The tracked history was reviewed across 11 commits and 78 unique
+file versions: no private credential/database files or credential-pattern matches
+were found. Tracked material is SDK source, synthetic fixtures, guides and dated
+integration evidence; live credentials, application records and runtime state
+remain outside this repository. GitGuardian checks passed on the implementation.
+
+Current access guides use anonymous source/release downloads. Earlier private
+repository references are historical. Published preview archives and tags remain
+immutable; licensing and runtime support are unchanged. Public source availability
+does not imply a public npm publication or a new live-app deployment.

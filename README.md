@@ -18,11 +18,12 @@ The initial target is a single owner installing trusted applications on Linux, i
 ## Install
 
 For new integrations, download the archive and checksum from the
-[private preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3).
+[preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3).
 The two qualified live apps remain on preview 2; this onboarding release does not
-redeploy them. The repository and release require authorized GitHub access.
+redeploy them. The repository and release assets are public; no GitHub account is needed to read
+the source or download the SDK.
 Use the current documentation on main for deployment notes. To build source
-yourself, clone this repository using your authorized GitHub account (check out
+yourself, clone this public repository (check out
 `v0.1.0-preview.3` to reproduce that release), then:
 
 ```sh

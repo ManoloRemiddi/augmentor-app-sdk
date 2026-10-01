@@ -6,7 +6,7 @@ changing model selection or restarting shared work. Start from the exact failure
 
 | Symptom | Inspect / next action |
 | --- | --- |
-| Repository/release 404 or access denied | Confirm this is the private repository and the agent's GitHub identity has access. No public npm fallback is provided. |
+| Repository/release download fails | The SDK repository and release assets are public. Check the exact repository/tag/asset URL and network response; GitHub authentication is unnecessary for downloads. No public npm package is provided. |
 | CLI not found or `npx` asks to install a package | Install the reviewed archive in the target app; invoke `./node_modules/.bin/augmentor-app --help`. |
 | `INVALID_MANIFEST` | Read the reported schema path. Use DSH, relative existing regular files inside the root, unique exact tool names, and explicit experimental voice settings. `--schema-only` does not qualify files. |
 | `SCAFFOLD_CONFLICT` | Existing files were preserved. Read/adapt them or generate into a separate staging directory; do not delete user files to rerun init. |

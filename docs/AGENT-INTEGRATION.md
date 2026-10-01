@@ -26,10 +26,11 @@ host is not this topology. macOS/Windows SDK installation, multi-tenant SaaS,
 untrusted plugins, Pi/Codex harnesses and cloud voice are not qualified here.
 Keep Resonant Voice experimental, optional and off initially.
 
-The repository/release is private. The agent's GitHub identity needs access. A
-permission error is an access prerequisite, not a reason to invent a public npm
-package. `@augmentor/app-sdk` is installed from a pinned archive; no public npm
-publication is claimed. Never print access tokens or copy another app's credentials.
+The repository and release assets are public. An agent can clone the source and
+download the pinned SDK archive without a GitHub account. `@augmentor/app-sdk`
+is installed from that archive; no public npm publication is claimed. Runtime
+and application credentials remain installation-owned. Never print access tokens
+or copy another app's credentials.
 
 ## Build in this order
 
@@ -60,7 +61,7 @@ a missing app tool work.
 ## Ask only when the answer is necessary
 
 Proceed with reversible source work and isolated tests. Request missing facts
-when the target app, authorized deployment, private-repo access, desired record
+when the target app, authorized deployment, desired record
 scope, owner authentication or installation identity cannot be established.
 Do not fabricate a model provider, credential, deployment target or business
 permission. Follow existing user authorization; this guide adds no approval gate.
@@ -99,7 +100,7 @@ Provide this prompt together with the actual target app and deployment scope:
 
 > Integrate the Augmentor App SDK into this application. Read the SDK repository's
 > AGENTS.md and docs/AGENT-INTEGRATION.md, then the target app's own instructions.
-> Use a pinned private release, the maintained Augmentor panel, exact tool grants
+> Use a pinned SDK release, the maintained Augmentor panel, exact tool grants
 > and the existing application authentication/data rules. Start with one read-only
 > authoritative tool. Keep DSH as the only harness and voice experimental/off.
 > Run the documented acceptance checks and report source, installed and live

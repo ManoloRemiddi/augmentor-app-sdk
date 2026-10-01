@@ -6,22 +6,23 @@ existing trusted single-owner Node application. The scaffold is integration code
 not a separate reference app. Replace example IDs/ports with the target app's
 stable identity and actual origin. Preserve existing identities during migration.
 
-## 1. Install the pinned private package
+## 1. Install the pinned public release
 
-Requirements: Node >=24.14, authorized GitHub access, an existing application
+Requirements: Node >=24.14, an existing application
 package.json and a compatible managed Augmentor runtime on a Linux model host.
 From the target app directory, download the immutable preview release:
 
 ```sh
 mkdir -p vendor
-gh release download v0.1.0-preview.3 --repo ManoloRemiddi/augmentor-app-sdk --dir vendor --pattern 'augmentor-app-sdk-0.1.0-preview.3.*'
+curl --fail --location --output vendor/augmentor-app-sdk-0.1.0-preview.3.tgz https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/download/v0.1.0-preview.3/augmentor-app-sdk-0.1.0-preview.3.tgz
+curl --fail --location --output vendor/augmentor-app-sdk-0.1.0-preview.3.sha256 https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/download/v0.1.0-preview.3/augmentor-app-sdk-0.1.0-preview.3.sha256
 (cd vendor && sha256sum --check augmentor-app-sdk-0.1.0-preview.3.sha256)
 npm install --save-exact ./vendor/augmentor-app-sdk-0.1.0-preview.3.tgz
 ./node_modules/.bin/augmentor-app --help
 ```
 
 Keep the archive, checksum, lockfile and release provenance in the application's
-repository according to its private-source policy. Do not depend on an absolute
+repository according to its source policy. Do not depend on an absolute
 path into another developer's SDK checkout. If building SDK source instead, use
 `npm ci --ignore-scripts`, `npm run check`, `npm test`, `npm run test:package`, then
 `npm pack`. Never replace a published release's bytes with a different local build.

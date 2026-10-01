@@ -1,6 +1,16 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## Public access — 1 October 2026
+
+The owner authorized making `ManoloRemiddi/augmentor-app-sdk` public. Source and
+release assets are readable without GitHub authentication. The quick start uses
+anonymous download URLs. Existing released archives/tags remain immutable; their
+access notes reflect the earlier private development stage. Follow the maintained
+guides on main for current access instructions. Application credentials and
+installation configuration remain private. License and resale-agreement terms
+are unchanged.
+
 ## Current onboarding release — 1 October 2026
 
 Preview 3 adds the [agent entry guide](AGENT-INTEGRATION.md), [API](API.md),
@@ -24,7 +34,7 @@ remain on preview 2; no new live app or UI/audio qualification is claimed here.
 
 ## Existing integration record
 
-See [qualification](QUALIFICATION.md) for exact source revisions, the private
+See [qualification](QUALIFICATION.md) for exact source revisions, the SDK
 release, selected runtime and the completed live cutover of both existing apps.
 Preview 2 fixes the live DSH composition issue found during deployment.
 
