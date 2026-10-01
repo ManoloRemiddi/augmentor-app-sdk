@@ -197,6 +197,19 @@ experimental and remains off by default; cloud voice, Pi and Codex remain deferr
 
 ## Agent onboarding: preview 3 — 1 October 2026
 
+[PR #1](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/1) is merged.
+Implementation head `b9d859d2d50195e52d1b8a933c91b4b137636746` passed
+[push CI](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/36829930736)
+and [PR CI](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/36829936174),
+including clean packed-consumer acceptance, plus GitGuardian. The immutable
+[preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3)
+is tagged at merge `ed31dc00f98a58492155962307c2631c4b3501a5`.
+Archive SHA-256:
+`c50088cb6cd88c3bbf8fec48861a41fa845b2a25a7d3959f3e50088fdb8bdad8`.
+The downloaded GitHub archive matched the local artifact and checksum byte for
+byte, and contained the agent instructions and templates. Later documentation
+records do not change those immutable release bytes.
+
 This release improves the handoff to an agent working from the repository alone.
 It adds the agent entry workflow, API reference, acceptance and troubleshooting
 instructions; all are shipped in the package with AGENTS.md. The read-only
