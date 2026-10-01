@@ -13,7 +13,9 @@ runtime changes or model calls were created by `init`.
 3. Connect `server.mjs` to your existing HTTP and WebSocket routers. Supply your
    actual owner-session validator and `readRecord(id)` backed by authoritative
    application records. Return `{id, version, title}` or `null`. Adapt this small
-   projection and the tool's output schema together for your domain.
+   projection and the tool's output schema together for your domain. If private
+   installation options override `id`, pass that workspace ID as `profile` to
+   `createAppIntegration`; it defaults to the manifest ID.
 4. Bundle `browser.mjs` through your normal frontend build. Mount in a container
    with a real height, forward selected-record IDs with `setContext`, and call
    `destroy()` on teardown. Do not recreate the chat UI.

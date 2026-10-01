@@ -34,7 +34,7 @@ test('generated modules use the installed package and HTTP/socket/tool boundarie
   t.after(async()=>{for(const socket of sockets)socket.destroy();await Promise.all([server,upstream].map(s=>new Promise(resolve=>s.close(resolve))));});
   upstream.listen(0,'127.0.0.1');await once(upstream,'listening');server.listen(0,'127.0.0.1');await once(server,'listening');
   const origin='http://127.0.0.1:'+server.address().port;
-  integration=createAppIntegration({origin,proxyTokenFile,appAgentTokenFile,port:upstream.address().port,
+  integration=createAppIntegration({origin,profile:'fixture-instance',proxyTokenFile,appAgentTokenFile,port:upstream.address().port,
     authorizeOwner:async req=>req.headers.cookie==='synthetic-owner=yes',
     readRecord:async id=>{reads++;if(id==='fault')throw Error('private backend failure');if(id==='invalid')return {id,version:-1,title:'bad'};
       return id==='record-1'?{id,version:7,title:'Synthetic record',privateField:'must not escape'}:null;}});
@@ -44,7 +44,7 @@ test('generated modules use the installed package and HTTP/socket/tool boundarie
   assert.equal((await fetch(origin+'/augmentor/sidepanel.html')).status,403);
   assert.equal((await fetch(origin+'/augmentor/sidepanel.html',{headers:{Cookie:'synthetic-owner=yes',Origin:'https://other.invalid'}})).status,403);
   const panel=await fetch(origin+'/augmentor/sidepanel.html',{headers:{Cookie:'synthetic-owner=yes',Origin:origin,Authorization:'Bearer browser-injection'}});
-  assert.equal(await panel.text(),'synthetic maintained panel');assert.equal(upstreamPath,'/embed/fixture-records/sidepanel.html');
+  assert.equal(await panel.text(),'synthetic maintained panel');assert.equal(upstreamPath,'/embed/fixture-instance/sidepanel.html');
   assert.equal(upstreamHeaders.authorization,'Bearer '+proxyToken);assert.equal(upstreamHeaders.cookie,undefined);assert.equal(upstreamCalls,1);
   assert.equal((await post(envelope,{Authorization:''})).status,401);
   assert.equal((await post(envelope,{Authorization:'Bearer '+proxyToken})).status,401);

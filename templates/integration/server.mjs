@@ -12,11 +12,11 @@ const reply = (res, status, body) => {
 };
 
 export function createAppIntegration({origin, proxyTokenFile, appAgentTokenFile, authorizeOwner, readRecord,
-  socketPath, port}) {
+  profile = __APP_ID_JSON__, socketPath, port}) {
   if (typeof authorizeOwner !== 'function' || typeof readRecord !== 'function') {
     throw Error('Supply the existing owner-session check and authoritative record reader');
   }
-  const proxy = createProxy({profile: __APP_ID_JSON__, origin, tokenFile: proxyTokenFile,
+  const proxy = createProxy({profile, origin, tokenFile: proxyTokenFile,
     authorize: authorizeOwner, socketPath, port});
   return {
     // Returns false when the existing application router should handle the request.

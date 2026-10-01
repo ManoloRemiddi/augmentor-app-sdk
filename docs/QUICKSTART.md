@@ -127,6 +127,7 @@ it using the private installation options and the application's actual callbacks
 ```js
 import {createAppIntegration} from './augmentor/server.mjs';
 const integration = createAppIntegration({
+  profile: install.id ?? 'my-app',
   origin: install.origin,
   proxyTokenFile: install.tokenFile,
   appAgentTokenFile: install.toolConfig['my-app-tools'].tokenFile,
