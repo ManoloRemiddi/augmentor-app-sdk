@@ -6,6 +6,7 @@ import {createApplicationTools,createToolClient} from '../src/tools.mjs';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
+import {createServer} from 'node:http';
 test('declared array inputs and outputs are validated before use',async()=>{
  const tools=[];let calls=0;await registerDshTools({tools:{register:t=>tools.push(t),presentAs:()=>{throw Error('The preset already owns tool presentation');}}},{defineTool:x=>x,definitions:[['save','Save',{ids:{type:'array',items:{type:'string'},required:true}},{type:'object',required:['saved']}]],execute:async()=>{calls++;return {saved:true};}});
  const execution={agent:{id:'s'},signal:new AbortController().signal};
@@ -32,4 +33,16 @@ test('DSH and Codex tool clients retain the same durable identity and never retr
  assert.equal(received[0].operationId,received[1].operationId);assert.equal(received[0].sessionId,'s');
  let sends=0;const uncertain=createToolClient({url:'http://127.0.0.1:8000/tool',tokenFile,fetchImpl:async()=>{sends++;throw Error('connection lost');}});
  await assert.rejects(uncertain('read',{}, {sessionId:'s',callId:'call'}),error=>error.code==='UNKNOWN_OUTCOME');assert.equal(sends,1);
+});
+test('a response lost after dispatch retains its durable operation identity without replay',async t=>{
+ const root=mkdtempSync(join(tmpdir(),'sdk-tool-interrupted-')),tokenFile=join(root,'private.token');writeFileSync(tokenFile,'synthetic-private-token');
+ let received,sends=0,headersReceived=false;const server=createServer(async(req,res)=>{
+  let raw='';for await(const chunk of req)raw+=chunk;received=JSON.parse(raw);sends++;
+  res.writeHead(200,{'Content-Type':'application/json','Content-Length':'100'});res.write('{"saved":');setTimeout(()=>res.destroy(),50);
+ });
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ t.after(async()=>{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));rmSync(root,{recursive:true,force:true});});
+ const execute=createToolClient({url:`http://127.0.0.1:${server.address().port}/tool`,tokenFile,fetchImpl:async(...args)=>{const response=await fetch(...args);headersReceived=true;return response;}});
+ await assert.rejects(execute('save',{}, {sessionId:'owned',callId:'native-call'}),error=>error.code==='UNKNOWN_OUTCOME'&&error.details.operationId===received.operationId);
+ assert.equal(headersReceived,true);assert.equal(sends,1);
 });

@@ -45,7 +45,9 @@ export function createToolClient({url,tokenFile,timeoutMs=25000,maxBytes=4*1024*
     const signal=AbortSignal.any([AbortSignal.timeout(timeoutMs),...execution.signal?[execution.signal]:[]]);
     let response;
     try{response=await fetchImpl(target,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+readFileSync(tokenFile,'utf8').trim()},body:JSON.stringify({name,args,sessionId,eventId:operationId,operationId}),signal,redirect:'error'});}catch{throw new AugmentorError('UNKNOWN_OUTCOME','Tool response was not confirmed; the SDK did not retry',{operationId});}
-    const chunks=[];let bytes=0;for await(const chunk of response.body){bytes+=chunk.length;check(bytes<=maxBytes,'RESPONSE_TOO_LARGE','Paginate application tool results');chunks.push(chunk);}
+    const chunks=[];let bytes=0;
+    try{for await(const chunk of response.body){bytes+=chunk.length;check(bytes<=maxBytes,'RESPONSE_TOO_LARGE','Paginate application tool results',{operationId});chunks.push(chunk);}}
+    catch(error){if(error instanceof AugmentorError)throw error;throw new AugmentorError('UNKNOWN_OUTCOME','Tool response was interrupted; the SDK did not retry',{operationId});}
     let value;try{value=JSON.parse(Buffer.concat(chunks).toString());}catch{throw new AugmentorError('INVALID_RESPONSE','Application response was not valid JSON',{operationId});}
     if(!response.ok)throw new AugmentorError(value.code||'APPLICATION_ERROR',value.error||'Application request failed',{operationId,status:response.status});
     return value;

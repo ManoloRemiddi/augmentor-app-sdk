@@ -19,9 +19,10 @@ try {
  const [packed]=JSON.parse(run('npm',['pack','--ignore-scripts','--json','--pack-destination',root],repository));
  writeFileSync(join(consumer,'package.json'),JSON.stringify({name:'sdk-product-fixture',private:true,type:'module'}));
  run('npm',['install','--ignore-scripts','--no-audit','--no-fund',join(root,packed.filename)]);
+ const python=process.env.AUGMENTOR_PYTHON||run(process.platform==='win32'?'python':'python3',['-I','-B','-c','import sys; print(sys.executable)']).trim();
  const sdk=join(consumer,'node_modules/@augmentor/app-sdk/src');
  const tests=process.platform==='win32'?['tests/workspace-capabilities.test.mjs']:['tests/codex-workspaces.test.mjs','tests/workspace-capabilities.test.mjs'];
- const output=run(process.execPath,['--test',...tests],product,{...process.env,
+ const output=run(process.execPath,['--test',...tests],product,{...process.env,AUGMENTOR_PYTHON:python,
    AUGMENTOR_SDK_CLIENT_ENTRY:join(sdk,'client.mjs'),AUGMENTOR_SDK_TOOLS_ENTRY:join(sdk,'tools.mjs')});
  process.stdout.write(output);
  if(process.platform==='win32')process.stdout.write('Windows Codex remains unsupported; platform private-file proof is a separate required gate.\n');

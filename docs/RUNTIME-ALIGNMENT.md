@@ -64,6 +64,10 @@ durable operation IDs from session/native call ID/tool. It never retries a
 backend request automatically. Application receipts/revisions remain mandatory
 for writes and externally visible effects.
 
+A response interrupted after HTTP headers arrive is also `UNKNOWN_OUTCOME`,
+with the same operation ID attached. Callers reconcile the backend receipt;
+neither a partial response nor cancellation proves that a write did not happen.
+
 The paired product binds role/directory/connection/memory, filters histories and
 checks ownership on session operations, including branch/attach/cancel. Existing
 sessions retain their instruction/tool snapshot while live grant revocation is
@@ -109,7 +113,8 @@ replacement; an app closing must not stop another app's shared service.
 
 ## Qualification and compatibility maintenance
 
-Run source/packed checks, then build the exact paired public product source and:
+From the SDK source checkout, run source/packed checks, then build the exact
+paired public product source and:
 
 ```sh
 npm run test:runtime -- /absolute/path/to/paired/augmentor-agent
@@ -122,9 +127,18 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`c583475`](https://github.com/ManoloRemiddi/augmentor-agent/commit/c583475f4e6420ddc46df0c5a49cfe87545dd78c)
+[`20a6398`](https://github.com/ManoloRemiddi/augmentor-agent/commit/20a639863780b3f0bffb182c4b6ec08bd29d3ad7)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
+
+Local source checks pass 28 SDK cases, the clean packed consumer and the paired
+native proof. The proof uses `AUGMENTOR_PYTHON` when selected, otherwise resolves
+the local Python interpreter. Windows qualification additionally requires the
+product's pinned OS credential dependency. The first hosted candidate failed
+Windows database cleanup because cleanup preceded closing its SQLite handles;
+the corrected fixture closes handles before removal. Product-owned Mac path and
+Windows quoting fixtures are corrected in the pinned follow-up above. Fresh
+hosted results remain required; these corrections do not qualify an installed app.
 
 Maintain the same contract in both repositories. New shared settings, harness,
 platform bootstrap, IPC, tool policy or lifecycle behavior needs a paired impact
