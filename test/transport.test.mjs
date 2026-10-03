@@ -8,9 +8,35 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import http from 'node:http';
 import {AugmentorClient,createProxy,discoverRuntime} from '../src/index.mjs';
-function fixture(t){const root=mkdtempSync(join(tmpdir(),'sdk-client-'));t.after(()=>rmSync(root,{recursive:true,force:true}));mkdirSync(join(root,'services/workspaces'),{recursive:true});writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/1',harnesses:['dsh']}));const descriptor=join(root,'desktop.json');writeFileSync(descriptor,JSON.stringify({root,node:process.execPath,python:'/usr/bin/python3'}));return {root,descriptor};}
-function host(){const child=new EventEmitter();child.stdin=new PassThrough();child.stdout=new PassThrough();child.kill=()=>child.emit('exit');let buffer=Buffer.alloc(0),calls=[];
- child.stdin.on('data',chunk=>{buffer=Buffer.concat([buffer,chunk]);while(buffer.length>=4&&buffer.length>=buffer.readUInt32LE()+4){const n=buffer.readUInt32LE(),m=JSON.parse(buffer.subarray(4,n+4));buffer=buffer.subarray(n+4);calls.push(m);if(m.method==='session.prompt')continue;const result=m.method==='workspace.describe'?{protocol:'augmentor-app/1',profile:'fixture',harness:'dsh',productProtocol:'product/1',productVersion:'1'}:{};const body=Buffer.from(JSON.stringify({id:m.id,result})),header=Buffer.alloc(4);header.writeUInt32LE(body.length);queueMicrotask(()=>{child.stdout.write(header.subarray(0,2));child.stdout.write(Buffer.concat([header.subarray(2),body]));});}});return {child,calls};}
+function fixture(t){const root=mkdtempSync(join(tmpdir(),'sdk-client-'));t.after(()=>rmSync(root,{recursive:true,force:true}));mkdirSync(join(root,'services/workspaces'),{recursive:true});writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/1',harnesses:['dsh']}));if(process.platform!=='linux'){mkdirSync(join(root,'scripts'));writeFileSync(join(root,'scripts/app-sdk-launch.py'),'# synthetic adapter; only inspected by mocked transport');}const descriptor=join(root,'desktop.json');writeFileSync(descriptor,JSON.stringify({root,node:process.execPath,python:process.execPath}));return {root,descriptor};}
+function host(description={}){const child=new EventEmitter();child.stdin=new PassThrough();child.stdout=new PassThrough();child.kill=()=>child.emit('exit');let buffer=Buffer.alloc(0),calls=[];
+ child.stdin.on('data',chunk=>{buffer=Buffer.concat([buffer,chunk]);while(buffer.length>=4&&buffer.length>=buffer.readUInt32LE()+4){const n=buffer.readUInt32LE(),m=JSON.parse(buffer.subarray(4,n+4));buffer=buffer.subarray(n+4);calls.push(m);if(m.method==='session.prompt')continue;const result=m.method==='workspace.describe'?{protocol:'augmentor-app/1',profile:'fixture',harness:'dsh',productProtocol:'product/1',productVersion:'1',...description}:{};const body=Buffer.from(JSON.stringify({id:m.id,result})),header=Buffer.alloc(4);header.writeUInt32LE(body.length);queueMicrotask(()=>{child.stdout.write(header.subarray(0,2));child.stdout.write(Buffer.concat([header.subarray(2),body]));});}});return {child,calls};}
+test('required feature denial stops negotiation before harness initialization',async t=>{
+ const {descriptor}=fixture(t),h=host({features:{'dictation-settings':{state:'denied'}}});
+ const c=new AugmentorClient({profile:'fixture',descriptor,requiredCapabilities:['dictation-settings'],start:()=>h.child});t.after(()=>c.close());
+ await assert.rejects(c.connect(),error=>error.code==='CAPABILITY_UNAVAILABLE');
+ assert.deepEqual(h.calls.map(call=>call.method),['workspace.describe']);assert.equal(c.ready,false);
+});
+test('capabilities can refresh after owner opt-out without replaying a prompt',async t=>{
+ const {descriptor}=fixture(t),description={features:{voice:{state:'supported'}}},h=host(description);
+ const c=new AugmentorClient({profile:'fixture',descriptor,requiredCapabilities:['voice'],start:()=>h.child});t.after(()=>c.close());await c.connect();
+ description.features.voice.state='disabled';
+ await assert.rejects(c.refreshCapabilities(),error=>error.code==='CAPABILITY_UNAVAILABLE'&&error.details.state==='disabled');
+ await assert.rejects(c.connect(),error=>error.code==='CAPABILITY_UNAVAILABLE');
+ assert.equal(h.calls.some(call=>call.method==='session.prompt'),false);
+});
+test('Codex negotiation requires explicit advertised support and never falls back to DSH',async t=>{
+ const {root,descriptor}=fixture(t),h=host({harness:'codex'});let starts=0;
+ const c=new AugmentorClient({profile:'fixture',descriptor,harness:'codex',start:()=>{starts++;return h.child;}});t.after(()=>c.close());
+ await assert.rejects(c.connect(),error=>error.code==='INCOMPATIBLE_RUNTIME');assert.equal(starts,0);
+ writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/1',harnesses:['dsh','codex']}));
+ await c.connect();assert.equal(starts,1);assert.deepEqual(h.calls.find(call=>call.method==='harness.select').params,{harness:'codex'});
+ for(const id of ['s:foreign','s'.repeat(129)]){
+  assert.throws(()=>c.createSession(id),e=>e.code==='INVALID_ID');assert.throws(()=>c.cancel(id),e=>e.code==='INVALID_ID');
+  assert.throws(()=>c.prompt({sessionId:'valid',operationId:id,text:'Read'}),e=>e.code==='INVALID_ID');
+ }
+ assert.equal(h.calls.some(call=>call.method==='session.prompt'||call.method==='session.create'||call.method==='session.cancel'),false);
+});
 test('concurrent connect uses one host, parses fragmented frames and never replays unknown prompts',async t=>{
  const {descriptor}=fixture(t),h=host();let starts=0;const c=new AugmentorClient({profile:'fixture',descriptor,start:()=>{starts++;return h.child;},timeoutMs:30});t.after(()=>c.close());
  await Promise.all([c.connect(),c.connect()]);assert.equal(starts,1);
@@ -21,6 +47,15 @@ test('concurrent connect uses one host, parses fragmented frames and never repla
 test('host death rejects pending work with uncertainty and no leaked promises',async t=>{
  const {descriptor}=fixture(t),h=host(),c=new AugmentorClient({profile:'fixture',descriptor,start:()=>h.child});t.after(()=>c.close());await c.connect();
  const pending=c.prompt({sessionId:'s',operationId:'op',text:'Write'});h.child.emit('exit');await assert.rejects(pending,e=>e.code==='UNKNOWN_OUTCOME');assert.equal(c.pending.size,0);
+});
+test('prompt context is cloned and invalid or oversized UTF-8 evidence is rejected before dispatch',async t=>{
+ const {descriptor}=fixture(t),h=host(),c=new AugmentorClient({profile:'fixture',descriptor,start:()=>h.child,timeoutMs:20});t.after(()=>c.close());await c.connect();
+ const context={record:{id:'selected',revision:7}},pending=c.prompt({sessionId:'s',operationId:'snapshot',text:'Read',context});context.record.id='changed';
+ await assert.rejects(pending,e=>e.code==='UNKNOWN_OUTCOME');
+ assert.deepEqual(h.calls.find(call=>call.method==='session.prompt').params.workspaceContext,{record:{id:'selected',revision:7}});
+ const circular={};circular.self=circular;
+ for(const context of [null,[],circular,{text:'😀'.repeat(4000)},{toJSON:()=>[]}])assert.throws(()=>c.prompt({sessionId:'s',operationId:'invalid',text:'Read',context}),e=>e.code==='INVALID_CONTEXT');
+ assert.equal(h.calls.filter(call=>call.method==='session.prompt').length,1);
 });
 test('runtime discovery rejects legacy or unsupported installations',async t=>{
  const {root,descriptor}=fixture(t);writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/2',harnesses:['dsh']}));

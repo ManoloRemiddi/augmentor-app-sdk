@@ -2,28 +2,34 @@
 import {spawn} from 'node:child_process';
 import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
-import {join} from 'node:path';
-import {discoverRuntime} from './runtime.mjs';
+import {discoverRuntime,runtimeLaunch} from './runtime.mjs';
+import {requireCapabilities} from './capabilities.mjs';
+import {snapshotContext} from './context.mjs';
 import {AugmentorError, check, SDK_PROTOCOL, isId} from './errors.mjs';
 const READS = new Set(['workspace.describe','initialize','augmentor/handshake','session.list','session.history','session.models','augmentor/models']);
+const codexId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 export class AugmentorClient extends EventEmitter {
-  constructor({profile, descriptor, timeoutMs = 40000, start = spawn} = {}) {
+  constructor({profile, descriptor,runtimeRoot,harness='dsh', requiredCapabilities = [], timeoutMs = 40000, start = spawn} = {}) {
     super(); check(/^[a-z][a-z0-9-]{0,63}$/.test(profile), 'INVALID_PROFILE', 'A registered profile ID is required');
-    this.profile = profile; this.descriptor = descriptor; this.timeoutMs = timeoutMs; this.start = start;
+    check(Array.isArray(requiredCapabilities) && requiredCapabilities.every(name => typeof name === 'string'), 'INVALID_REQUEST', 'Required capabilities must be an array of names');
+    this.profile = profile; this.descriptor = descriptor; this.runtimeRoot=runtimeRoot;this.timeoutMs = timeoutMs; this.start = start;
+    this.requiredCapabilities = [...requiredCapabilities];
+    check(['dsh','codex'].includes(harness),'INVALID_REQUEST','Choose DSH or Codex');this.harness=harness;
     this.pending = new Map(); this.child = null; this.connecting = null; this.closed = false;
   }
   async connect() {
     check(!this.closed, 'CLIENT_CLOSED', 'Create a new client after close');
     if (this.connecting) return this.connecting;
-    if (this.ready && this.child) return this;
+    if (this.ready && this.child) {requireCapabilities(this.capabilities,this.requiredCapabilities);return this;}
     this.connecting = this.open().finally(() => {this.connecting = null;});
     return this.connecting;
   }
   async open() {
-    const runtime = await discoverRuntime({descriptor: this.descriptor});
+    const runtime = await discoverRuntime({descriptor: this.descriptor,runtimeRoot:this.runtimeRoot,harness:this.harness});
     check(!this.closed, 'CLIENT_CLOSED', 'Client closed during discovery');
-    const child = this.start(runtime.node, [join(runtime.root, 'apps/browser/native-host.mjs')], {stdio: ['pipe','pipe','ignore'],
-      env: {...process.env, AUGMENTOR_PYTHON: runtime.python, AUGMENTOR_WORKSPACE_PROFILE: this.profile}});
+    const launch=runtimeLaunch(runtime,'native');
+    const child = this.start(launch.command,launch.args,{stdio: ['pipe','pipe','ignore'],windowsHide:true,
+      env: {...launch.env, AUGMENTOR_WORKSPACE_PROFILE: this.profile}});
     this.child = child; let buffer = Buffer.alloc(0), ended = false;
     const fail = () => {
       if (ended) return; ended = true;
@@ -50,10 +56,11 @@ export class AugmentorClient extends EventEmitter {
     });
     try {
       const description = await this.call('workspace.describe', {protocol: SDK_PROTOCOL});
-      check(description.protocol === SDK_PROTOCOL && description.profile === this.profile && description.harness === 'dsh', 'INCOMPATIBLE_RUNTIME', 'Workspace negotiation failed');
+      check(description.protocol === SDK_PROTOCOL && description.profile === this.profile && description.harness === this.harness, 'INCOMPATIBLE_RUNTIME', 'Workspace negotiation failed');
       this.capabilities = description;
+      requireCapabilities(description, this.requiredCapabilities);
       await this.call('augmentor/handshake', {protocol: description.productProtocol, version: description.productVersion});
-      await this.call('harness.select', {harness: 'dsh'});
+      await this.call('harness.select', {harness: this.harness});
       await this.call('initialize'); this.ready = true;
       return this;
     } catch (error) {fail(); child.kill(); throw error;}
@@ -74,13 +81,21 @@ export class AugmentorClient extends EventEmitter {
       child.stdin.write(Buffer.concat([header, body]));
     });
   }
-  createSession(sessionId = randomUUID()) {check(isId(sessionId), 'INVALID_ID', 'Invalid session ID'); return this.call('session.create', {sessionId});}
+  createSession(sessionId = randomUUID()) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness'); return this.call('session.create', {sessionId});}
+  async refreshCapabilities() {
+    check(this.ready, 'NOT_CONNECTED', 'Connect before refreshing workspace capabilities');
+    const description = await this.call('workspace.describe', {protocol: SDK_PROTOCOL});
+    check(description.protocol === SDK_PROTOCOL && description.profile === this.profile && description.harness === this.harness, 'INCOMPATIBLE_RUNTIME', 'Workspace negotiation changed');
+    this.capabilities = description;
+    return requireCapabilities(description, this.requiredCapabilities);
+  }
   listSessions() {return this.call('session.list');}
   prompt({sessionId, operationId, text, context}) {
     check(isId(sessionId) && isId(operationId) && typeof text === 'string' && text.trim(), 'INVALID_REQUEST', 'Session, stable operation ID and non-empty text are required');
-    return this.call('session.prompt', {sessionId, requestId: operationId, mode: 'queue', content: [{type:'text', text}], ...(context ? {workspaceContext: context} : {})});
+    check(this.harness!=='codex'||codexId(sessionId)&&(codexId(operationId)||/^resonant-voice:[a-f0-9-]{36}$/.test(operationId)), 'INVALID_ID', 'Codex IDs must use at most 128 letters, digits, underscores or hyphens');
+    return this.call('session.prompt', {sessionId, requestId: operationId, mode: 'queue', content: [{type:'text', text}], ...(context !== undefined ? {workspaceContext: snapshotContext(context)} : {})});
   }
-  cancel(sessionId) {check(isId(sessionId), 'INVALID_ID', 'Invalid session ID'); return this.call('session.cancel', {sessionId});}
+  cancel(sessionId) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness'); return this.call('session.cancel', {sessionId});}
   close() {
     this.closed = true; this.ready = false; const child = this.child; this.child = null;
     for (const [id, p] of this.pending) {clearTimeout(p.timer); p.reject(this.failure(p.method, p.operationId, id));}

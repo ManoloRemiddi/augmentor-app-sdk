@@ -4,10 +4,10 @@ import {resolve, dirname, join} from 'node:path';
 import {validateManifest} from './manifest.mjs';
 import {check} from './errors.mjs';
 
-export function scaffold(directory, {id = 'my-app', name = 'My app'} = {}) {
+export function scaffold(directory, {id = 'my-app', name = 'My app',harness='dsh'} = {}) {
   const root = resolve(directory), toolName = id.replaceAll('-', '_') + '_read_record';
   const pluginId = id.slice(0, 58) + '-tools';
-  const manifest = validateManifest({schemaVersion: 1, id, name, harness: 'dsh',
+  const manifest = validateManifest({schemaVersion: 1, id, name, harness,
     instructions: ['augmentor/agent-role.md'],
     tools: [{id: pluginId, module: 'augmentor/tools.mjs', names: [toolName]}],
     permissions: {tools: []}, voice: {experimental: true, enabled: false}});
@@ -20,6 +20,11 @@ export function scaffold(directory, {id = 'my-app', name = 'My app'} = {}) {
     files.set('augmentor/' + file, template.replace(/__[A-Z_]+__/g, key => replacements[key] ?? key));
   }
   files.set('augmentor/.gitignore', 'private/\n');
+  if(harness==='codex'){
+    const options=JSON.parse(files.get('augmentor/install.example.json'));
+    options.connection='existing-codex-connection-id';
+    files.set('augmentor/install.example.json',JSON.stringify(options,null,2)+'\n');
+  }
   try {
     const entry = lstatSync(join(root, 'augmentor'));
     check(entry.isDirectory() && !entry.isSymbolicLink(), 'SCAFFOLD_CONFLICT', 'augmentor must be a real directory, not a file or symlink');

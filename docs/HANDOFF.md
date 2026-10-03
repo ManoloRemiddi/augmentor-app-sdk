@@ -1,6 +1,31 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## Preview 4 source candidate — October 3, 2026
+
+The owner has authorized the SDK source update. The public-source integration
+uses this already-qualified functional pair; the developer guides now distinguish
+source builds from the immutable release and include [compatibility maintenance](MAINTENANCE.md).
+Fresh local SDK, packed-consumer and paired-runtime checks pass, alongside all
+88 Browser cases, four platform contracts and product check/build/privacy checks.
+This updates source availability; customer release and live migration remain
+separate gates.
+
+[Runtime alignment](RUNTIME-ALIGNMENT.md) owns the new feature negotiation,
+harness-neutral tools, experimental Codex adapter, platform bootstrap and
+paired-package/platform qualification. This candidate is not a published
+release or live app cutover. Preserve the immutable preview 3 release and both
+existing preview 2 deployments.
+
+Current functional pair: SDK `925b72e` / product `8a085be`. The alignment guide
+records passing SDK/platform/Mac-bundle/Windows-desktop/full-Linux and Windows
+x64/ARM64 installation checks. All required source/package qualification is
+complete for that pair; customer-release gates remain explicit and open.
+Its newest checkpoint supersedes historical pending statuses without relabelling
+older test runs. The agent entry guide also distinguishes the released DSH task
+from an explicitly authorized experimental Codex source integration.
+
+
 ## Public access — 1 October 2026
 
 The owner authorized making `ManoloRemiddi/augmentor-app-sdk` public. Source and
@@ -62,6 +87,10 @@ Runtime qualification additionally runs Augmentor's workspace tests and `scripts
 Existing app regression tests are separate from installed/live qualification. YouTube's Google channel permissions, Sponsor desk's account authorizations, physical speech, and editorial quality remain their owning applications' qualification concerns. The SDK does not fix absent provider permissions or certify existing business content.
 
 ## Completion boundaries
+
+The paragraph below records the original DSH-only implementation phase.
+Preview 4 source scope and qualification are owned by [runtime alignment](RUNTIME-ALIGNMENT.md);
+that extension remains unreleased and does not migrate the two live applications.
 
 The preview requires a product build containing `augmentor-app/1`. Source and fixture success alone do not establish a selected or running runtime. Record exact commits, package hashes, deployment scope and live checks in the final qualification record. Public npm publication, multi-tenant hosting, Pi/Codex harnesses, cloud voice and the owner's independent adoption test are excluded from this implementation phase.
 

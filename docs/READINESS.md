@@ -1,6 +1,10 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Feasibility and readiness
 
+This guide describes the released DSH/Linux baseline. The unreleased preview 4
+[alignment candidate](RUNTIME-ALIGNMENT.md) adds feature negotiation, experimental
+Codex and OS discovery/startup adapters with separate platform and customer gates.
+
 The design is feasible for an owner installing trusted applications on a Linux
 host running Augmentor and DSH. The two existing integrations already share the
 necessary boundaries: an application API and data store, an Augmentor workspace

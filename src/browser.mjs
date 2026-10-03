@@ -1,5 +1,6 @@
 // Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
 // Hosting only. Augmentor serves and owns the complete maintained interface.
+import {snapshotContext} from './context.mjs';
 export function mountAugmentor({container, path = '/augmentor/', title = 'Augmentor', onStatus = () => {}, onNavigate = () => {}, onSettings = url => window.open(url, '_blank', 'noopener'), onHide = () => {}}) {
   if (!(container instanceof Element)) throw Error('A container element is required');
   const base = new URL(path, location.href);
@@ -23,8 +24,7 @@ export function mountAugmentor({container, path = '/augmentor/', title = 'Augmen
   return {
     frame,
     setContext(value) {
-      if (!value || typeof value !== 'object' || Array.isArray(value) || new TextEncoder().encode(JSON.stringify(value)).length > 16000) throw Error('Context must be an object of at most 16 KB');
-      context = JSON.parse(JSON.stringify(value)); sendContext();
+      context = snapshotContext(value); sendContext();
     },
     destroy() {window.removeEventListener('message', listener); frame.remove(); ready = false;},
   };

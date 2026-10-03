@@ -14,7 +14,7 @@ Choose a stable app/profile ID; do not reuse `my-app` across installations.
 
 Read, in order:
 
-1. [Quick start](QUICKSTART.md): the complete install and wiring sequence.
+1. [Runtime alignment](RUNTIME-ALIGNMENT.md) for preview 4 source, then [Quick start](QUICKSTART.md): the complete install and wiring sequence.
 2. [Contract](CONTRACT.md) and [security](SECURITY.md): authority, recovery and trust.
 3. [API](API.md): exact exports, method signatures, defaults and ownership.
 4. [Acceptance](ACCEPTANCE.md): what must be demonstrated before saying it works.
@@ -22,8 +22,10 @@ Read, in order:
 
 Supported: trusted single-owner applications, Linux managed Augmentor runtime,
 DSH, Node 24.14+. A cloud-only app without access to an owner-managed Augmentor
-host is not this topology. macOS/Windows SDK installation, multi-tenant SaaS,
-untrusted plugins, Pi/Codex harnesses and cloud voice are not qualified here.
+host is not this topology. Customer macOS/Windows SDK installation, multi-tenant SaaS, untrusted plugins,
+Pi and cloud voice are not qualified here. Preview 4 source has an experimental
+Codex application adapter and OS startup/private-path contracts; use the alignment
+guide and its exact gates rather than treating product support as SDK qualification.
 Keep Resonant Voice experimental, optional and off initially.
 
 The repository and release assets are public. An agent can clone the source and
@@ -53,7 +55,7 @@ The same read-only projection must agree between backend and tool output schema.
 
 An app's business API, credentials, source provenance, records, domain validation,
 schedules and externally visible actions remain app-owned. Augmentor owns chat
-rendering, DSH lifecycle, workspace memory and model policy. Use the SDK's client,
+rendering, the selected harness lifecycle, workspace memory and model policy. Use the SDK's client,
 proxy and browser mount; do not fork Augmentor's UI, spawn another agent loop or
 import its release internals. Never grant shell/browser/delegation merely to make
 a missing app tool work.
@@ -107,3 +109,16 @@ Provide this prompt together with the actual target app and deployment scope:
 > evidence separately. Preserve existing data, histories, jobs and configuration.
 > Ask for facts you cannot establish; do not invent credentials or claim fixture
 > results prove a live integration. Follow my stated deployment authorization.
+
+That prompt targets the published DSH/Linux baseline. For an explicitly authorized
+preview 4 Codex development integration, also supply this instruction:
+
+> Use the unreleased preview 4 source candidate and the immutable paired product
+> revision from docs/RUNTIME-ALIGNMENT.md. Select Codex explicitly on Linux or
+> macOS; do not fall back to DSH or claim Windows Codex support. Reuse an existing
+> owner-configured Codex connection ID and generate the Codex scaffold. Verify
+> the workspace role, exact grants, session/memory ownership, context binding,
+> cancellation, recovery and packed-runtime proof before claiming source
+> integration. Keep installation-wide settings in standalone Augmentor. Report
+> customer installation and real-provider checks separately; this candidate is
+> not a published release or permission to migrate a live application.

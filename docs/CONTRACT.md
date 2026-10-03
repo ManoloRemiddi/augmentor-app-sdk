@@ -1,7 +1,7 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Connection contract v1
 
-Protocol: `augmentor-app/1`. Manifest schema: `1`. Supported harness: `dsh`. Versions with a different protocol major fail closed. Preview package patch versions may add optional fields; required semantic changes require a protocol revision.
+Protocol: `augmentor-app/1`. Manifest schema: `1`. The released preview 3 baseline supports `dsh`; the unreleased preview 4 extension below adds explicit experimental `codex` and platform adapters. Versions with a different protocol major fail closed. Preview package patch versions may add optional fields; required semantic changes require a protocol revision.
 
 Developer CLI and scaffold behavior is documented in [API](API.md). Preview 3
 keeps this runtime protocol unchanged. File preflight never imports app modules;
@@ -39,3 +39,25 @@ The application owns canonical records, artifacts, provenance, source acknowledg
 Key error codes: `INVALID_MANIFEST`, `RUNTIME_UNAVAILABLE`, `INCOMPATIBLE_RUNTIME`, `INVALID_CALLER`, `INVALID_ARGUMENTS`, `PERMISSION_DENIED`, `NOT_CONNECTED`, `DISCONNECTED`, `UNKNOWN_OUTCOME`, `OPERATION_CONFLICT`, `STALE_ATTEMPT`, `RECONCILIATION_REQUIRED`, `BACKPRESSURE`. Operation IDs may be logged; credentials and private source content must not be. HTTP adapters preserve domain conflicts and limits in their structured errors.
 
 Source deletion, retention and export require coordination across application caches, artifacts, DSH history, derived memory and backups. This preview does not supply a universal erase API. Uninstalling the SDK package must not delete those stores or other applications' profiles.
+
+## Preview 4 source extension
+
+[Runtime alignment](RUNTIME-ALIGNMENT.md) specifies additive capability-schema 1
+states, explicit experimental Codex selection/connection identity, shared
+administration denial and platform startup/private-file adapters. DSH remains
+the default. Missing capability fields are unknown, never implied permission.
+The SDK protocol stays augmentor-app/1; older DSH contracts retain their baseline
+use without required new features. Windows Codex and Pi are unsupported.
+
+Selection context is a bounded JSON object (16,000 UTF-8 bytes, at most 64 nested
+levels). The client and maintained embed clone it; malformed context is refused,
+not truncated. An invalid direct embed message clears its retained selection.
+Codex binds a canonical snapshot to the durable operation fingerprint and sends
+bounded untrusted fragments with a request-specific superseding manifest.
+An omitted Codex selection becomes `{}`; old data may remain in native history
+and must not be treated as current. Existing ledgers without selection remain
+readable. Reusing a pre-extension operation ID with added context is a conflict,
+not an implicit migration or authorization to resubmit. DSH keeps its existing
+latest-session selection and ten-minute expiry. Applications needing a precise
+queued target must preserve that target in their request/backend operation and
+resolve it through tools. Neither harness lets context change workspace authority.

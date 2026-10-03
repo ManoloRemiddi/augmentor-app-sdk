@@ -18,14 +18,15 @@ to download an unrelated public package when the local package is missing.
 | `init [directory] --id app-id --name "App name"` | Writes manifest plus integration scaffold. Preflights every output; refuses collisions. Defaults remain `my-app` / `My app`; use an explicit unique ID. Does not install dependencies, credentials or runtime. |
 | `validate manifest.json` | Schema, unique tool names/IDs, existing regular instruction/module files and symlink/path containment. Does not import modules or certify their exports/behavior. Paths are relative to the manifest's directory. |
 | `validate manifest.json --schema-only` | Schema and uniqueness only; for manifests whose files are not yet staged |
-| `doctor [descriptor]` | Reads selected runtime descriptor and SDK protocol/DSH contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
+| `doctor [descriptor] [--harness dsh|codex] [--runtime-root installed-root]` | Reads selected runtime descriptor and SDK protocol/requested harness contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
 | `plan manifest.json private-install.json` | Read-only profile derivation. Shows exact identity, origin, grants and memory binding; omits credentials/tool configuration. Does not run the installer, check active identities, validate credentials or start services. |
 | `register manifest.json private-install.json` | Validates files/runtime, creates a private proxy credential if absent, delegates installation to the managed product. Does not restart services. |
 
 Failures exit nonzero and print a code/message when available. Schema failures
 include instance paths and the violated rule. Installation keys: `origin`
 (required), `toolConfig`, `root`, `descriptor`, `id`, `preset`, `memory`,
-`legacyPresets`, `tokenFile`. Unknown keys are rejected. `root` and `descriptor`,
+`legacyPresets`, `tokenFile`, `connection`, `runtimeRoot`. Codex requires an
+explicit existing connection ID. Descriptor/runtimeRoot are mutually exclusive. Unknown keys are rejected. `root` and `descriptor`,
 when supplied, must be absolute. The default root is the manifest directory.
 `toolConfig` keys must match declared plugin IDs and values must be objects;
 their internal fields are application-owned, not certified by plan.
@@ -37,7 +38,7 @@ their internal fields are application-owned, not certified by plan.
 | `validateManifest(value)` | Returns a cloned valid manifest; no file checks |
 | `validateApplication(value, {root})` | Adds read-only existing-file and containment checks; returns the cloned manifest |
 | `workspaceProfile(manifest, {root, origin, tokenFile, toolConfig?, id?, preset?, memory?, legacyPresets?})` | Pure profile construction with file checks; does not install. Exact HTTPS/loopback origin; absolute proxy token path. Default preset `augmentor-<id>`, memory person `app-<id>-owner`, project canonical cwd. |
-| `discoverRuntime({descriptor?} = {})` | Resolves selected managed descriptor/contract. Default `$XDG_DATA_HOME/augmentor/desktop.json`, or `~/.local/share/augmentor/desktop.json`. Does not establish running readiness. |
+| `discoverRuntime({descriptor?, runtimeRoot?, harness='dsh'} = {})` | Resolves the managed descriptor or installed bundle bootstrap and verifies the requested harness/platform contract. Descriptor and runtimeRoot are mutually exclusive. Defaults come from `runtimePaths()`. Does not establish running readiness. |
 | `createProxy({profile, origin, tokenFile, authorize, socketPath?, port=8872, path='/augmentor/'})` | Returns async `http(req,res)` / `upgrade(req,socket,head)`. Server-only. Owner callback may be async; it must return exactly `true`. Route only matching paths. HTTPS/owner access is host-owned. |
 | `AugmentorError` | `Error` with `.code` and `.details`. Log only selected non-private details. |
 | `SDK_PROTOCOL` | `augmentor-app/1` |
@@ -50,7 +51,8 @@ case and supersedes the loopback port. There is no automatic tunnel provisioner.
 ## Native client
 
 ```js
-const client = new AugmentorClient({profile, descriptor, timeoutMs: 40000});
+const client = new AugmentorClient({profile, descriptor, harness: 'dsh',
+  requiredCapabilities: [], timeoutMs: 40000});
 try {
   await client.connect();
   console.log(client.capabilities.protocol); // workspace.describe result
@@ -63,7 +65,7 @@ try {
 
 | Member | Meaning |
 | --- | --- |
-| `connect()` | Coalesces concurrent calls, negotiates workspace/DSH/product and initializes the bridge. Resolves to client. No prompt is submitted. |
+| `connect()` | Coalesces concurrent calls, negotiates workspace/requested harness/product, checks required capabilities and initializes the bridge. Resolves to client. No prompt is submitted. |
 | `createSession(sessionId = randomUUID())` | Sends `session.create`; returns the product result object, not the session ID string. Generate/persist your own ID when you need it later. |
 | `prompt({sessionId, operationId, text, context?})` | Nonempty text; stable persisted operation ID becomes product `requestId`. Queue acknowledgment is not task completion. |
 | `listSessions()` | Product `session.list` result. A returned row's `running:false` is an observation; a missing row is not proof of non-execution. |
@@ -71,7 +73,7 @@ try {
 | `call(method, params={})` | Advanced passthrough to supported, workspace-authorized product commands. Does not add methods or bypass policy. For history: `call('session.history', {sessionId})`. Returned events retain product shapes; see matching product code before consuming other commands/events. |
 | `on('event', handler)` | Receives unsolicited product messages `{method, params, ...}`; not a normalized stream of tokens |
 | `on('disconnected', handler)` | Connection lost; pending mutations may have unknown outcomes. Explicit `connect()` may reconnect; no request is replayed. |
-| `close()` | Disposes this transport permanently; make a new client afterwards. Does not mean DSH work has been cancelled. |
+| `close()` | Disposes this transport permanently; make a new client afterwards. Does not mean harness work has been cancelled. |
 
 Do not chain an untracked `randomUUID()` directly inside a prompt call. Persist
 session ID, operation ID and prompt input **before** submission. On
@@ -122,3 +124,39 @@ App write endpoints must reject an attempt after cancellation/replacement/expiry
 and validate assignment/source freshness in the same transaction as their writes.
 `finish` may reconcile the same interrupted attempt; it cannot certify outputs.
 SQLite receipts cannot guarantee exactly-once effects at an arbitrary external API.
+
+## Preview 4 additive API
+
+`runtimePaths({platform?, home?, env?})` returns config/data/state/profiles,
+descriptor and installed runtimeRoot defaults. `discoverRuntime` additionally
+accepts `harness` (default dsh) and an installed Mac/Windows bundle `runtimeRoot`
+alternative to descriptor. Linux uses its selected managed descriptor. It verifies
+the requested adapter, not service/model readiness.
+`AugmentorClient` accepts these plus `requiredCapabilities`; its
+`refreshCapabilities()` returns a newly negotiated snapshot without replay.
+`capabilityState(description,name)` and `requireCapabilities(description,names)`
+use the states described in [runtime alignment](RUNTIME-ALIGNMENT.md).
+
+`createApplicationTools` and `createToolClient` are exported from the root and
+`@augmentor/app-sdk/tools`. The former accepts the same tool tuples as
+`registerDshTools`, returns `{tools,execute}`, validates declared schemas and
+requires a string session identity. Execution accepts Codex `{sessionId,callId,
+signal}` or DSH `{agent:{id},callId,signal}`. The latter preserves stable receipt
+identity across these forms. `init --harness codex` adds the private connection
+placeholder and exports the shared applicationTools adapter. Existing DSH
+imports remain compatible. This additive section and alignment guide describe
+source candidate behavior; the immutable preview 3 package has its own API guide.
+
+`prompt({sessionId,operationId,text,context?})` and browser `setContext(context)`
+accept JSON objects of at most 16,000 UTF-8 bytes and 64 nested levels. Invalid
+context throws `INVALID_CONTEXT` before dispatch. `{}` clears selection. Codex
+session/operation IDs use up to 128 letters, digits, underscores or hyphens;
+the private connection ID uses the same pattern and is checked during planning;
+the existing voice request namespace is also accepted for operation IDs.
+Codex persists selection with the operation and rejects reuse of an ID with
+changed text or context. Queueing, steering, promotion and reopening retain that
+snapshot. DSH retains its existing latest-session selection behavior; inspect
+`features['application-context'].binding` before depending on queue snapshots.
+Context is evidence, never instructions or a grant. Tools must fetch current
+records/revisions before a write. Low-level Codex branch-status requests must
+include both the owning parent `sessionId` and intended child `newSessionId`.

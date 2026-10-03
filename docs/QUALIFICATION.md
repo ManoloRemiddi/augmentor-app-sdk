@@ -1,6 +1,12 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # SDK qualification — 30 September 2026
 
+Preview 4 source extension: see [runtime alignment](RUNTIME-ALIGNMENT.md).
+The exact SDK `925b72e` / product `8a085be` pair passes all required
+source/packed/platform/product-bundle and installation lifecycle gates.
+The live cutover below remains preview 2. No new customer SDK installation or
+real-provider Codex qualification is implied by the development candidate.
+
 **Live cutover is complete.** The current deployment uses preview 2 and the
 additional product corrections recorded below. The preview 1 record remains as
 historical evidence; it does not describe the current app rollout.
