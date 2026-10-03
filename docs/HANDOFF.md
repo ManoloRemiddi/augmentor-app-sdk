@@ -72,6 +72,10 @@ Existing app regression tests are separate from installed/live qualification. Yo
 
 ## Completion boundaries
 
+The paragraph below records the original DSH-only implementation phase.
+Preview 4 source scope and qualification are owned by [runtime alignment](RUNTIME-ALIGNMENT.md);
+that extension remains unreleased and does not migrate the two live applications.
+
 The preview requires a product build containing `augmentor-app/1`. Source and fixture success alone do not establish a selected or running runtime. Record exact commits, package hashes, deployment scope and live checks in the final qualification record. Public npm publication, multi-tenant hosting, Pi/Codex harnesses, cloud voice and the owner's independent adoption test are excluded from this implementation phase.
 
 ## Source qualification — 30 September 2026

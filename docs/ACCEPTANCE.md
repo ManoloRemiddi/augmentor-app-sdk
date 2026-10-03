@@ -11,7 +11,7 @@ business records as a generic SDK smoke test.
 - [ ] Authorized repo/release access; archive hash checked; exact package/lockfile recorded.
 - [ ] Existing auth, record ownership and deployment topology identified.
 - [ ] `validate` passes for real files; manifest names match registered tool names.
-- [ ] `doctor` finds `augmentor-app/1`/DSH; do not treat this as running readiness.
+- [ ] `doctor` finds `augmentor-app/1` and the requested harness (DSH for released preview 3); do not treat this as running readiness.
 - [ ] `plan` reviewed: unique/stable profile, preset, canonical cwd and memory binding.
 - [ ] No wildcard or incidental shell/browser/delegation grants; voice off.
 - [ ] Separate app-agent/proxy tokens and installation config ignored, private and absent from browser bundles, logs and Git diff.
@@ -30,12 +30,13 @@ business records as a generic SDK smoke test.
 ## Real managed-runtime and browser checks
 
 - [ ] Registration succeeds on the model host without unexpected identity/config changes.
-- [ ] `AugmentorClient.connect()` negotiates the expected profile and DSH; shared administration and another workspace's history are denied.
+- [ ] `AugmentorClient.connect()` negotiates the expected profile and requested harness; shared administration and another workspace's history are denied.
 - [ ] A **new chat** in the actual host app panel receives one real model response and invokes the intended read-only app tool successfully.
 - [ ] Assembled model tool catalog equals the manifest's exact union of app names and extra grants. The runtime also denies ungranted execution.
 - [ ] Reload/reconnect preserves that conversation without replaying its request.
 - [ ] A harmless running task can be stopped; confirm that exact session is idle. Cancellation acknowledgment alone is insufficient.
 - [ ] If voice is offered, the workspace opt-in persists independently and starts off. Physical recording/playback needs separate testing before claiming audio works.
+- [ ] Embedded appearance/thinking preferences survive reopening and colour resets without changing another profile or the standalone agent, including apps sharing one origin.
 - [ ] Business data, drafts, prior history and app settings survive migration; normal app health checks pass.
 
 ## Delivery record

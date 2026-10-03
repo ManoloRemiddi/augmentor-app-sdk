@@ -40,7 +40,11 @@ tool grants and fresh OS consent are required for computer use. Handy inserts
 system dictation into a focused app; it is separate from experimental Resonant
 conversation voice. Dictation/setup/identity/shared memory configuration stays
 in standalone Augmentor. The maintained embed handles local appearance,
-workspace voice opt-in, saved chats, read-only memory context and prompt use.
+Conversation/Thinking display, workspace voice opt-in, saved chats, read-only
+memory context and prompt use. Appearance and the approved Open/Collapsed thinking
+choice persist in the authenticated workspace store and profile-specific browser
+caches, including apps on the same website origin. Colour resets preserve the
+thinking choice. Standalone settings retain their separate development lifecycle.
 
 ## Explicit experimental Codex selection
 
@@ -151,7 +155,7 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`6c3b1ca`](https://github.com/ManoloRemiddi/augmentor-agent/commit/6c3b1ca7c272fb42a8fd4b131da980699fe20723)
+[`031ae59`](https://github.com/ManoloRemiddi/augmentor-agent/commit/031ae592f86c36f8da5f1fe9bc291246e5d354d9)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
@@ -206,8 +210,12 @@ The selection follow-up passes 29 local SDK source cases, the clean packed
 consumer and 27 paired product cases. These verify immutable queued context,
 steering/promotion, unknown-outcome no replay, UTF-8 bounds, actual untrusted
 provider input and parent-scoped branch status. The client also rejects invalid
-Codex IDs before dispatch. Hosted qualification for the connection-ID preflight
-follow-up is pending. Earlier
+Codex IDs before dispatch. The connection-ID preflight follow-up passes all six
+jobs at SDK `b91b908`, paired with product `6c3b1ca`, in
+[37114441418](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37114441418).
+The newer product pin adds scoped thinking/appearance persistence; its local
+88 Browser cases and 11 workspace contracts pass. Fresh paired/package checks
+qualify that newer pin independently. Earlier
 [SDK matrix 37112032843](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37112032843)
 passes all six jobs with the prior product pin `629eaa6`; its
 [Mac 14/26 packaged checks](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37111918486)

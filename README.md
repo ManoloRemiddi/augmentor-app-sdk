@@ -37,6 +37,12 @@ npm run test:package
 npm pack
 ```
 
+The development branch `feat/runtime-capability-alignment` instead builds
+`0.1.0-preview.4`. Its [alignment guide](docs/RUNTIME-ALIGNMENT.md) identifies the
+exact paired product source and unfinished customer-installation gates. Use the
+resulting preview 4 archive only for that development candidate; the published
+preview 3 archive and existing live apps remain unchanged.
+
 Install the resulting `augmentor-app-sdk-0.1.0-preview.3.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
 
 From your application directory after installing the package:
