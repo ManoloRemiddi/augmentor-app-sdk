@@ -30,7 +30,7 @@ export function validateApplication(manifest, {root}) {
 }
 export function workspaceProfile(manifest, options) {
   const m = validateManifest(manifest), {root, origin, tokenFile, toolConfig = {}, id = m.id, preset = 'augmentor-' + id, memory, legacyPresets = [], connection} = options;
-  check(m.harness!=='codex'||typeof connection==='string'&&/^[a-zA-Z0-9_.:-]{1,160}$/.test(connection),'INVALID_INSTALL','Codex workspaces require an explicit existing connection profile ID');
+  check(m.harness!=='codex'||typeof connection==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(connection),'INVALID_INSTALL','Codex workspaces require an explicit existing connection profile ID (at most 128 letters, digits, underscores or hyphens)');
   const u = new URL(origin);
   check(u.origin === origin && (u.protocol === 'https:' || (u.protocol === 'http:' && ['127.0.0.1','[::1]','localhost'].includes(u.hostname))), 'INVALID_ORIGIN', 'Use an exact HTTPS origin or a local loopback origin');
   check(/^[a-z][a-z0-9-]{0,63}$/.test(id) && /^augmentor-[a-z0-9-]+$/.test(preset), 'INVALID_MANIFEST', 'Invalid workspace or preset ID');

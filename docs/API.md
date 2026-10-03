@@ -18,7 +18,7 @@ to download an unrelated public package when the local package is missing.
 | `init [directory] --id app-id --name "App name"` | Writes manifest plus integration scaffold. Preflights every output; refuses collisions. Defaults remain `my-app` / `My app`; use an explicit unique ID. Does not install dependencies, credentials or runtime. |
 | `validate manifest.json` | Schema, unique tool names/IDs, existing regular instruction/module files and symlink/path containment. Does not import modules or certify their exports/behavior. Paths are relative to the manifest's directory. |
 | `validate manifest.json --schema-only` | Schema and uniqueness only; for manifests whose files are not yet staged |
-| `doctor [descriptor] [--harness dsh|codex] [--runtime-root installed-root]` | Reads selected runtime descriptor and SDK protocol/DSH contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
+| `doctor [descriptor] [--harness dsh|codex] [--runtime-root installed-root]` | Reads selected runtime descriptor and SDK protocol/requested harness contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
 | `plan manifest.json private-install.json` | Read-only profile derivation. Shows exact identity, origin, grants and memory binding; omits credentials/tool configuration. Does not run the installer, check active identities, validate credentials or start services. |
 | `register manifest.json private-install.json` | Validates files/runtime, creates a private proxy credential if absent, delegates installation to the managed product. Does not restart services. |
 
@@ -150,6 +150,7 @@ this additive section and alignment guide own the source candidate behavior.
 accept JSON objects of at most 16,000 UTF-8 bytes and 64 nested levels. Invalid
 context throws `INVALID_CONTEXT` before dispatch. `{}` clears selection. Codex
 session/operation IDs use up to 128 letters, digits, underscores or hyphens;
+the private connection ID uses the same pattern and is checked during planning;
 the existing voice request namespace is also accepted for operation IDs.
 Codex persists selection with the operation and rejects reuse of an ID with
 changed text or context. Queueing, steering, promotion and reopening retain that

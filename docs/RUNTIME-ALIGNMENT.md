@@ -155,6 +155,14 @@ SDK CI tests Linux/macOS/Windows packages and pins the paired product source
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
+The [six-job SDK matrix 37113782817](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37113782817)
+passes on Linux, Mac and Windows at SDK `9a06429`, paired with product `6c3b1ca`.
+The separate [product platform matrix 37113710249](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37113710249)
+passes all three platforms at `6c3b1ca`. These include the context/branch
+follow-up. Final preflight additionally refuses connection IDs outside the
+pinned Codex host's 128-character identifier pattern before registration;
+fresh SDK checks qualify that subsequent source change independently.
+
 Local source checks pass 29 SDK cases, the clean packed consumer and the paired
 native proof. The proof uses `AUGMENTOR_PYTHON` when selected, otherwise resolves
 the local Python interpreter. Windows qualification additionally requires the
@@ -198,7 +206,8 @@ The selection follow-up passes 29 local SDK source cases, the clean packed
 consumer and 27 paired product cases. These verify immutable queued context,
 steering/promotion, unknown-outcome no replay, UTF-8 bounds, actual untrusted
 provider input and parent-scoped branch status. The client also rejects invalid
-Codex IDs before dispatch. Fresh hosted qualification is pending. Earlier
+Codex IDs before dispatch. Hosted qualification for the connection-ID preflight
+follow-up is pending. Earlier
 [SDK matrix 37112032843](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37112032843)
 passes all six jobs with the prior product pin `629eaa6`; its
 [Mac 14/26 packaged checks](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37111918486)

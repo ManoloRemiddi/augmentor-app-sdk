@@ -61,3 +61,10 @@ administration denial; per-OS paths/private credentials/startup; actual packed
 client/tools against the immutable paired product source. Record physical and
 installed checks separately. Mac/Windows source tests do not certify a customer
 installation. Preserve DSH behavior and the two existing app deployments.
+
+For this candidate, negotiate the explicitly selected harness in the baseline
+checks rather than assuming DSH. Also verify context bounds, immutable Codex
+queue/steering/restart snapshots, changed-context conflicts and parent-scoped
+branch recovery. The reported `application-context.binding` distinguishes
+Codex operation snapshots from DSH latest-session selection; record that
+behavior rather than inferring identical queue semantics.

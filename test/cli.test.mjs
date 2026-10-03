@@ -87,5 +87,9 @@ test('Codex scaffold and plan require a private explicit connection and preserve
  assert.match(run('plan','augmentor.app.json','private.json').stderr,/explicit existing connection/);
  writeFileSync(join(root,'private.json'),JSON.stringify({origin:'http://127.0.0.1:8000',connection:'fixture-connection'}));
  const result=run('plan','augmentor.app.json','private.json');assert.equal(result.status,0,result.stderr);assert.equal(JSON.parse(result.stdout).harness,'codex');
+ for(const connection of ['invalid:connection','x'.repeat(129)]){
+  writeFileSync(join(root,'private.json'),JSON.stringify({origin:'http://127.0.0.1:8000',connection}));
+  const denied=run('plan','augmentor.app.json','private.json');assert.notEqual(denied.status,0);assert.match(denied.stderr,/INVALID_INSTALL/);
+ }
  assert.equal(existsSync(join(root,'profiles')),false);
 });
