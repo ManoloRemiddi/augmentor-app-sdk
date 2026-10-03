@@ -7,10 +7,21 @@ preview 2 deployment. This guide owns the candidate's added contracts and
 qualification boundary. Neither cloning source nor installing its package
 updates an existing Augmentor installation.
 
-The owner has authorized integrating this qualified SDK/product source update.
-Current source builds preview 4; release archive, runtime installation and app
+## Source integration — October 3
+
+[SDK PR #2](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/2) is merged
+on main at [`3797777`](https://github.com/ManoloRemiddi/augmentor-app-sdk/commit/3797777ee6634c1c0918a147563d5552f20fbd27),
+after paired [product PR #34](https://github.com/ManoloRemiddi/augmentor-agent/pull/34)
+merged at [`602669a`](https://github.com/ManoloRemiddi/augmentor-agent/commit/602669aa6ac741f2ccd8633692630b12578ec741).
+Each merge has exactly its reviewed PR tree. The functional source is unchanged
+from the qualified pair below; all later changes are documentation only.
+Current main builds preview 4. Release archive, runtime installation and app
 migration remain separate. [Compatibility maintenance](MAINTENANCE.md) defines
 the required impact review for future harness, OS, UI and settings changes.
+All six merged-source SDK checks also pass in
+[37123748023](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37123748023),
+covering source/packed consumers and the immutable paired runtime on Linux,
+macOS and Windows. Later documentation-only records do not change those bytes.
 
 ## Availability is a negotiated contract
 

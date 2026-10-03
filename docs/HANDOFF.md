@@ -3,13 +3,18 @@
 
 ## Preview 4 source candidate — October 3, 2026
 
-The owner has authorized the SDK source update. The public-source integration
-uses this already-qualified functional pair; the developer guides now distinguish
-source builds from the immutable release and include [compatibility maintenance](MAINTENANCE.md).
+The owner-authorized source update is integrated on main through
+[SDK PR #2](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/2), merge `3797777`,
+after paired [product PR #34](https://github.com/ManoloRemiddi/augmentor-agent/pull/34),
+merge `602669a`. The public-source integration uses this already-qualified
+functional pair; the developer guides now distinguish source builds from the
+immutable release and include [compatibility maintenance](MAINTENANCE.md).
 Fresh local SDK, packed-consumer and paired-runtime checks pass, alongside all
 88 Browser cases, four platform contracts and product check/build/privacy checks.
 This updates source availability; customer release and live migration remain
 separate gates.
+All six SDK jobs also pass after merging, in
+[37123748023](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37123748023).
 
 [Runtime alignment](RUNTIME-ALIGNMENT.md) owns the new feature negotiation,
 harness-neutral tools, experimental Codex adapter, platform bootstrap and
