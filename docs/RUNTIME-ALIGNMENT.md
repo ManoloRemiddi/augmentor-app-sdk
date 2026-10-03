@@ -22,6 +22,15 @@ All six merged-source SDK checks also pass in
 [37123748023](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37123748023),
 covering source/packed consumers and the immutable paired runtime on Linux,
 macOS and Windows. Later documentation-only records do not change those bytes.
+All eight merged-product validation jobs pass at `602669a` in
+[37123715286 attempt 2](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37123715286/attempts/2),
+including packaged Browser and installed upgrade/rollback/removal.
+The product's additional post-merge full validation encountered a loaded-Chromium
+Codex queue-composer timeout in its first attempt. The unchanged focused fixture
+passes four local runs and the hosted retry passes on the same source.
+[The product observation record](https://github.com/ManoloRemiddi/augmentor-agent/blob/main/docs/SDK-ALIGNMENT.md#supplemental-post-merge-browser-observation--october-3)
+retains the failure and repeat-acceptance gate; passing retries alone do not
+explain its cause. This does not change the published DSH/Linux support scope.
 
 ## Availability is a negotiated contract
 

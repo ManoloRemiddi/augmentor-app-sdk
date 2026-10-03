@@ -15,6 +15,10 @@ This updates source availability; customer release and live migration remain
 separate gates.
 All six SDK jobs also pass after merging, in
 [37123748023](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37123748023).
+All eight merged-product jobs also pass in
+[37123715286 attempt 2](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37123715286/attempts/2).
+The first loaded-Chromium queue timeout, passing repeats and remaining experimental
+acceptance gate are retained in the alignment record rather than marked resolved.
 
 [Runtime alignment](RUNTIME-ALIGNMENT.md) owns the new feature negotiation,
 harness-neutral tools, experimental Codex adapter, platform bootstrap and
