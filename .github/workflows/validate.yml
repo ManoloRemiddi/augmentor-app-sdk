@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: ManoloRemiddi/augmentor-agent
-          ref: a15ba2d1e56dc673a805907ae2bc70bec5ed1340
+          ref: 898d1930d6efb29f04fd004b4d0985e392446a87
           path: product
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:

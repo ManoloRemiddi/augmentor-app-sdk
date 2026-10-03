@@ -127,7 +127,7 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`a15ba2d`](https://github.com/ManoloRemiddi/augmentor-agent/commit/a15ba2d1e56dc673a805907ae2bc70bec5ed1340)
+[`898d193`](https://github.com/ManoloRemiddi/augmentor-agent/commit/898d1930d6efb29f04fd004b4d0985e392446a87)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
@@ -146,6 +146,11 @@ The adapter now converts the resolved filename to a file URL on every platform;
 the existing packed-consumer test exercises this exact import path. The paired
 product also keeps embedded model connection administration in standalone
 Augmentor, covered by its actual settings-entrypoint fixture.
+
+The product bundle workflows additionally qualify shipped SDK helpers,
+transactional registration, native description/denial and owned bridge exit
+against packaged Mac/Windows binaries. These checks start no model or login
+service and do not substitute for a complete installed app conversation.
 
 Maintain the same contract in both repositories. New shared settings, harness,
 platform bootstrap, IPC, tool policy or lifecycle behavior needs a paired impact
