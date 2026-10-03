@@ -4,8 +4,10 @@ import {EventEmitter} from 'node:events';
 import {randomUUID} from 'node:crypto';
 import {discoverRuntime,runtimeLaunch} from './runtime.mjs';
 import {requireCapabilities} from './capabilities.mjs';
+import {snapshotContext} from './context.mjs';
 import {AugmentorError, check, SDK_PROTOCOL, isId} from './errors.mjs';
 const READS = new Set(['workspace.describe','initialize','augmentor/handshake','session.list','session.history','session.models','augmentor/models']);
+const codexId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 export class AugmentorClient extends EventEmitter {
   constructor({profile, descriptor,runtimeRoot,harness='dsh', requiredCapabilities = [], timeoutMs = 40000, start = spawn} = {}) {
     super(); check(/^[a-z][a-z0-9-]{0,63}$/.test(profile), 'INVALID_PROFILE', 'A registered profile ID is required');
@@ -79,7 +81,7 @@ export class AugmentorClient extends EventEmitter {
       child.stdin.write(Buffer.concat([header, body]));
     });
   }
-  createSession(sessionId = randomUUID()) {check(isId(sessionId), 'INVALID_ID', 'Invalid session ID'); return this.call('session.create', {sessionId});}
+  createSession(sessionId = randomUUID()) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness'); return this.call('session.create', {sessionId});}
   async refreshCapabilities() {
     check(this.ready, 'NOT_CONNECTED', 'Connect before refreshing workspace capabilities');
     const description = await this.call('workspace.describe', {protocol: SDK_PROTOCOL});
@@ -90,9 +92,10 @@ export class AugmentorClient extends EventEmitter {
   listSessions() {return this.call('session.list');}
   prompt({sessionId, operationId, text, context}) {
     check(isId(sessionId) && isId(operationId) && typeof text === 'string' && text.trim(), 'INVALID_REQUEST', 'Session, stable operation ID and non-empty text are required');
-    return this.call('session.prompt', {sessionId, requestId: operationId, mode: 'queue', content: [{type:'text', text}], ...(context ? {workspaceContext: context} : {})});
+    check(this.harness!=='codex'||codexId(sessionId)&&(codexId(operationId)||/^resonant-voice:[a-f0-9-]{36}$/.test(operationId)), 'INVALID_ID', 'Codex IDs must use at most 128 letters, digits, underscores or hyphens');
+    return this.call('session.prompt', {sessionId, requestId: operationId, mode: 'queue', content: [{type:'text', text}], ...(context !== undefined ? {workspaceContext: snapshotContext(context)} : {})});
   }
-  cancel(sessionId) {check(isId(sessionId), 'INVALID_ID', 'Invalid session ID'); return this.call('session.cancel', {sessionId});}
+  cancel(sessionId) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness'); return this.call('session.cancel', {sessionId});}
   close() {
     this.closed = true; this.ready = false; const child = this.child; this.child = null;
     for (const [id, p] of this.pending) {clearTimeout(p.timer); p.reject(this.failure(p.method, p.operationId, id));}

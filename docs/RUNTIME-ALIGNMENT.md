@@ -81,6 +81,30 @@ Codex is qualified with the actual 0.159.2 engine and synthetic provider replies
 This does not certify subscription eligibility, real-provider behavior, Windows
 Codex, every model's tool support or installed product packaging.
 
+## Selection context and recovery
+
+`features['application-context']` reports the 16,000 UTF-8 byte limit and context
+binding. The SDK's native prompt API and browser setter reject malformed,
+oversized or more than 64-level nested JSON objects before sending. `{}` clears
+selection. Product boundaries enforce the same bounds independently.
+
+Codex binds the canonical selection snapshot to each durable operation. Queued
+requests, steering, promotion and restart keep that original snapshot. The same
+operation ID cannot change its text or context and is never resent automatically
+after an unknown outcome. Selection reaches the pinned engine through bounded
+untrusted fragments, separately from the user's prompt and the registered role.
+A request-specific manifest supersedes older selection; omitted context becomes
+`{}`. Historical fragments may remain visible; this does not erase history.
+Older ledgers remain readable. Adding context to an already admitted older
+operation is a conflict, not an implicit migration.
+
+DSH retains its qualified latest-session selection with ten-minute expiry. Apps
+needing exact queued targets must preserve them in their request/backend
+operation and fetch current records/revisions through tools. Neither binding
+lets selection alter tools or permissions. Codex branch-status requests include
+the owning parent `sessionId` and intended child `newSessionId`; foreign parent,
+workspace or child requests are refused before an absence claim.
+
 ## Platform setup
 
 `runtimePaths()` describes platform defaults, respecting explicit XDG roots.
@@ -127,11 +151,11 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`629eaa6`](https://github.com/ManoloRemiddi/augmentor-agent/commit/629eaa662c2abfbef6893b66982ad8fdf9f7abdc)
+[`6c3b1ca`](https://github.com/ManoloRemiddi/augmentor-agent/commit/6c3b1ca7c272fb42a8fd4b131da980699fe20723)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
-Local source checks pass 28 SDK cases, the clean packed consumer and the paired
+Local source checks pass 29 SDK cases, the clean packed consumer and the paired
 native proof. The proof uses `AUGMENTOR_PYTHON` when selected, otherwise resolves
 the local Python interpreter. Windows qualification additionally requires the
 product's pinned OS credential dependency. The first hosted candidate failed
@@ -156,9 +180,9 @@ service and do not substitute for a complete installed app conversation.
 passes all six source/packed/paired jobs on Linux, Mac and Windows at SDK
 `d77405f`, paired with product `898d193`. The separate
 [product matrix 37111509392](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37111509392)
-also passes all three platforms at `898d193`. The newer pin changes engine
-fixture teardown to close resources before state deletion and always close the
-local provider server. An earlier Mac engine case failed and retained a server
+also passes all three platforms at `898d193`. The teardown follow-up closes resources before state deletion and always closes
+the local provider server. The current pin additionally binds Codex selection
+to durable operations and scopes branch-status recovery to its parent. An earlier Mac engine case failed and retained a server
 until its job deadline; the later passing run does not establish that failure's
 cause. Fresh pinned checks and packaged native proof results remain required.
 
@@ -169,3 +193,14 @@ compatibility. Preserve released archives and deployed app provenance. The
 owner's independent third app remains untouched; these fixtures are not that
 adoption test. Physical dictation/voice, OS permission dialogs, installed service
 and update/rollback acceptance remain separate gates.
+
+The selection follow-up passes 29 local SDK source cases, the clean packed
+consumer and 27 paired product cases. These verify immutable queued context,
+steering/promotion, unknown-outcome no replay, UTF-8 bounds, actual untrusted
+provider input and parent-scoped branch status. The client also rejects invalid
+Codex IDs before dispatch. Fresh hosted qualification is pending. Earlier
+[SDK matrix 37112032843](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37112032843)
+passes all six jobs with the prior product pin `629eaa6`; its
+[Mac 14/26 packaged checks](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37111918486)
+also pass, including shipped SDK helper/registration/native-exit proofs. Those
+runs do not qualify the later selection changes or installed customer apps.

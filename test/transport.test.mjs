@@ -31,6 +31,11 @@ test('Codex negotiation requires explicit advertised support and never falls bac
  await assert.rejects(c.connect(),error=>error.code==='INCOMPATIBLE_RUNTIME');assert.equal(starts,0);
  writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/1',harnesses:['dsh','codex']}));
  await c.connect();assert.equal(starts,1);assert.deepEqual(h.calls.find(call=>call.method==='harness.select').params,{harness:'codex'});
+ for(const id of ['s:foreign','s'.repeat(129)]){
+  assert.throws(()=>c.createSession(id),e=>e.code==='INVALID_ID');assert.throws(()=>c.cancel(id),e=>e.code==='INVALID_ID');
+  assert.throws(()=>c.prompt({sessionId:'valid',operationId:id,text:'Read'}),e=>e.code==='INVALID_ID');
+ }
+ assert.equal(h.calls.some(call=>call.method==='session.prompt'||call.method==='session.create'||call.method==='session.cancel'),false);
 });
 test('concurrent connect uses one host, parses fragmented frames and never replays unknown prompts',async t=>{
  const {descriptor}=fixture(t),h=host();let starts=0;const c=new AugmentorClient({profile:'fixture',descriptor,start:()=>{starts++;return h.child;},timeoutMs:30});t.after(()=>c.close());
@@ -42,6 +47,15 @@ test('concurrent connect uses one host, parses fragmented frames and never repla
 test('host death rejects pending work with uncertainty and no leaked promises',async t=>{
  const {descriptor}=fixture(t),h=host(),c=new AugmentorClient({profile:'fixture',descriptor,start:()=>h.child});t.after(()=>c.close());await c.connect();
  const pending=c.prompt({sessionId:'s',operationId:'op',text:'Write'});h.child.emit('exit');await assert.rejects(pending,e=>e.code==='UNKNOWN_OUTCOME');assert.equal(c.pending.size,0);
+});
+test('prompt context is cloned and invalid or oversized UTF-8 evidence is rejected before dispatch',async t=>{
+ const {descriptor}=fixture(t),h=host(),c=new AugmentorClient({profile:'fixture',descriptor,start:()=>h.child,timeoutMs:20});t.after(()=>c.close());await c.connect();
+ const context={record:{id:'selected',revision:7}},pending=c.prompt({sessionId:'s',operationId:'snapshot',text:'Read',context});context.record.id='changed';
+ await assert.rejects(pending,e=>e.code==='UNKNOWN_OUTCOME');
+ assert.deepEqual(h.calls.find(call=>call.method==='session.prompt').params.workspaceContext,{record:{id:'selected',revision:7}});
+ const circular={};circular.self=circular;
+ for(const context of [null,[],circular,{text:'😀'.repeat(4000)},{toJSON:()=>[]}])assert.throws(()=>c.prompt({sessionId:'s',operationId:'invalid',text:'Read',context}),e=>e.code==='INVALID_CONTEXT');
+ assert.equal(h.calls.filter(call=>call.method==='session.prompt').length,1);
 });
 test('runtime discovery rejects legacy or unsupported installations',async t=>{
  const {root,descriptor}=fixture(t);writeFileSync(join(root,'services/workspaces/sdk.json'),JSON.stringify({protocol:'augmentor-app/2',harnesses:['dsh']}));

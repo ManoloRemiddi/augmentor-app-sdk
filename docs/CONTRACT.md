@@ -48,3 +48,16 @@ administration denial and platform startup/private-file adapters. DSH remains
 the default. Missing capability fields are unknown, never implied permission.
 The SDK protocol stays augmentor-app/1; older DSH contracts retain their baseline
 use without required new features. Windows Codex and Pi are unsupported.
+
+Selection context is a bounded JSON object (16,000 UTF-8 bytes, at most 64 nested
+levels). The client and maintained embed clone it; malformed context is refused,
+not truncated. An invalid direct embed message clears its retained selection.
+Codex binds a canonical snapshot to the durable operation fingerprint and sends
+bounded untrusted fragments with a request-specific superseding manifest.
+An omitted Codex selection becomes `{}`; old data may remain in native history
+and must not be treated as current. Existing ledgers without selection remain
+readable. Reusing a pre-extension operation ID with added context is a conflict,
+not an implicit migration or authorization to resubmit. DSH keeps its existing
+latest-session selection and ten-minute expiry. Applications needing a precise
+queued target must preserve that target in their request/backend operation and
+resolve it through tools. Neither harness lets context change workspace authority.

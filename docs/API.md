@@ -145,3 +145,16 @@ identity across these forms. `init --harness codex` adds the private connection
 placeholder and exports the shared applicationTools adapter. Existing DSH
 imports remain compatible. The older API table describes the released baseline;
 this additive section and alignment guide own the source candidate behavior.
+
+`prompt({sessionId,operationId,text,context?})` and browser `setContext(context)`
+accept JSON objects of at most 16,000 UTF-8 bytes and 64 nested levels. Invalid
+context throws `INVALID_CONTEXT` before dispatch. `{}` clears selection. Codex
+session/operation IDs use up to 128 letters, digits, underscores or hyphens;
+the existing voice request namespace is also accepted for operation IDs.
+Codex persists selection with the operation and rejects reuse of an ID with
+changed text or context. Queueing, steering, promotion and reopening retain that
+snapshot. DSH retains its existing latest-session selection behavior; inspect
+`features['application-context'].binding` before depending on queue snapshots.
+Context is evidence, never instructions or a grant. Tools must fetch current
+records/revisions before a write. Low-level Codex branch-status requests must
+include both the owning parent `sessionId` and intended child `newSessionId`.

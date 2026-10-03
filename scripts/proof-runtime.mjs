@@ -21,7 +21,8 @@ try {
  run('npm',['install','--ignore-scripts','--no-audit','--no-fund',join(root,packed.filename)]);
  const python=process.env.AUGMENTOR_PYTHON||run(process.platform==='win32'?'python':'python3',['-I','-B','-c','import sys; print(sys.executable)']).trim();
  const sdk=join(consumer,'node_modules/@augmentor/app-sdk/src');
- const tests=process.platform==='win32'?['tests/workspace-capabilities.test.mjs']:['tests/codex-workspaces.test.mjs','tests/workspace-capabilities.test.mjs'];
+ const common=['tests/workspace-capabilities.test.mjs','apps/browser/test/workspace-context.test.mjs'];
+ const tests=process.platform==='win32'?common:['tests/codex-operations.test.mjs','tests/codex-session.test.mjs','tests/codex-workspaces.test.mjs',...common];
  const output=run(process.execPath,['--test',...tests],product,{...process.env,AUGMENTOR_PYTHON:python,
    AUGMENTOR_SDK_CLIENT_ENTRY:join(sdk,'client.mjs'),AUGMENTOR_SDK_TOOLS_ENTRY:join(sdk,'tools.mjs')});
  process.stdout.write(output);
