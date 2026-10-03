@@ -129,8 +129,9 @@ SQLite receipts cannot guarantee exactly-once effects at an arbitrary external A
 
 `runtimePaths({platform?, home?, env?})` returns config/data/state/profiles,
 descriptor and installed runtimeRoot defaults. `discoverRuntime` additionally
-accepts `harness` (default dsh) and an installed `runtimeRoot` alternative to
-descriptor. It verifies the requested adapter, not service/model readiness.
+accepts `harness` (default dsh) and an installed Mac/Windows bundle `runtimeRoot`
+alternative to descriptor. Linux uses its selected managed descriptor. It verifies
+the requested adapter, not service/model readiness.
 `AugmentorClient` accepts these plus `requiredCapabilities`; its
 `refreshCapabilities()` returns a newly negotiated snapshot without replay.
 `capabilityState(description,name)` and `requireCapabilities(description,names)`
