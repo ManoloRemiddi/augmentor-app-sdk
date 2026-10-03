@@ -155,7 +155,7 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`031ae59`](https://github.com/ManoloRemiddi/augmentor-agent/commit/031ae592f86c36f8da5f1fe9bc291246e5d354d9)
+[`7468650`](https://github.com/ManoloRemiddi/augmentor-agent/commit/746865059cfdb2317c83d069e41baf3af0abb066)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
@@ -213,7 +213,8 @@ provider input and parent-scoped branch status. The client also rejects invalid
 Codex IDs before dispatch. The connection-ID preflight follow-up passes all six
 jobs at SDK `b91b908`, paired with product `6c3b1ca`, in
 [37114441418](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37114441418).
-The newer product pin adds scoped thinking/appearance persistence; its local
+The newer product pin combines current public Handy fixes with scoped
+thinking/appearance persistence; its local
 88 Browser cases and 11 workspace contracts pass. Fresh paired/package checks
 qualify that newer pin independently. Earlier
 [SDK matrix 37112032843](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37112032843)
