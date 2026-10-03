@@ -127,7 +127,7 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`898d193`](https://github.com/ManoloRemiddi/augmentor-agent/commit/898d1930d6efb29f04fd004b4d0985e392446a87)
+[`629eaa6`](https://github.com/ManoloRemiddi/augmentor-agent/commit/629eaa662c2abfbef6893b66982ad8fdf9f7abdc)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
@@ -151,6 +151,16 @@ The product bundle workflows additionally qualify shipped SDK helpers,
 transactional registration, native description/denial and owned bridge exit
 against packaged Mac/Windows binaries. These checks start no model or login
 service and do not substitute for a complete installed app conversation.
+
+[SDK matrix 37111618792](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37111618792)
+passes all six source/packed/paired jobs on Linux, Mac and Windows at SDK
+`d77405f`, paired with product `898d193`. The separate
+[product matrix 37111509392](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37111509392)
+also passes all three platforms at `898d193`. The newer pin changes engine
+fixture teardown to close resources before state deletion and always close the
+local provider server. An earlier Mac engine case failed and retained a server
+until its job deadline; the later passing run does not establish that failure's
+cause. Fresh pinned checks and packaged native proof results remain required.
 
 Maintain the same contract in both repositories. New shared settings, harness,
 platform bootstrap, IPC, tool policy or lifecycle behavior needs a paired impact
