@@ -157,8 +157,15 @@ Later documentation-only commits do not change these tested source files.
 | Product OS-private files, startup and workspace contracts | All three platforms pass in [37116596807](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596807) |
 | macOS 14/26 packaged runtime, including shipped SDK helpers | Pass in [37116596912](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596912) |
 | Windows x64/ARM64 desktop | Pass in [37116596991](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596991) |
-| Full Linux/source/native/installed-package/Browser regression | Still running in [37116596924](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596924) |
-| Windows x64/ARM64 packaged runtime and install/repair/removal | Still pending in [37116596824](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596824) |
+| Full Linux/source/native/installed-package/Browser regression | All jobs pass in [37116596924](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596924) |
+| Windows x64/ARM64 packaged runtime and install/repair/removal | Still running in [37116596824](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596824) |
+
+The exact product Linux run passes 522 root cases (520 passing/two opt-in skips),
+all 88 Browser cases, the real DSH tool guard, and 830 native cases (36
+platform/optional skips). Its installed-package and packaged-browser jobs also
+pass, including active-task refusal, interrupted configuration, upgrade,
+rollback and removal. Those lifecycle fixtures do not establish a customer SDK
+embedding service's installed upgrade acceptance on another OS.
 
 The paired engine proof uses the actual pinned Codex binary with synthetic
 provider replies on Linux/macOS. Windows verifies supported DSH/platform
