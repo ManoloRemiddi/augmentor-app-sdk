@@ -10,8 +10,9 @@ release or live app cutover. Preserve the immutable preview 3 release and both
 existing preview 2 deployments.
 
 Current functional pair: SDK `925b72e` / product `8a085be`. The alignment guide
-records passing SDK/platform/Mac-bundle/Windows-desktop/full-Linux checks, the
-still-live Windows installation gate, and the customer-release limits.
+records passing SDK/platform/Mac-bundle/Windows-desktop/full-Linux and Windows
+x64/ARM64 installation checks. All required source/package qualification is
+complete for that pair; customer-release gates remain explicit and open.
 Its newest checkpoint supersedes historical pending statuses without relabelling
 older test runs. The agent entry guide also distinguishes the released DSH task
 from an explicitly authorized experimental Codex source integration.

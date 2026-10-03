@@ -158,7 +158,24 @@ Later documentation-only commits do not change these tested source files.
 | macOS 14/26 packaged runtime, including shipped SDK helpers | Pass in [37116596912](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596912) |
 | Windows x64/ARM64 desktop | Pass in [37116596991](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596991) |
 | Full Linux/source/native/installed-package/Browser regression | All jobs pass in [37116596924](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596924) |
-| Windows x64/ARM64 packaged runtime and install/repair/removal | Still running in [37116596824](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596824) |
+| Windows x64/ARM64 packaged runtime and install/repair/removal | All jobs pass in [37116596824](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596824) |
+
+All required source/package gates for this functional pair completed successfully
+on October 3. The [paired product requirement audit](https://github.com/ManoloRemiddi/augmentor-agent/blob/feat/sdk-feature-alignment/docs/SDK-ALIGNMENT.md#requirement-audit)
+maps the implementation to its tests. Both Windows architectures additionally
+report actual packaged SDK registration, role composition, preserved private
+token, shared-administration denial and natural bridge exit. Their installed
+payload proofs preserve a busy draft, perform same-build repair and coordinated
+replacement/source restoration, refuse redirected paths, and retain persistent
+data on removal. No provider request is made by the SDK bundle proof.
+
+This completes qualification of the development source candidate, not customer
+SDK deployment. [SDK PR #2](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/2)
+and [product PR #34](https://github.com/ManoloRemiddi/augmentor-agent/pull/34)
+remain open drafts. No merge, new release archive or live migration is included.
+The clean packed-consumer check also passes locally with the final developer
+guides, exercising the shipped scaffold's HTTP/socket/tool boundaries in
+temporary state. It does not register a real application or call a model.
 
 The exact product Linux run passes 522 root cases (520 passing/two opt-in skips),
 all 88 Browser cases, the real DSH tool guard, and 830 native cases (36
