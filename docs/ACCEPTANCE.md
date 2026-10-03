@@ -51,3 +51,13 @@ For SDK maintainers, `npm run test:package` exercises the shipped artifact and
 scaffold in a clean temporary consumer using synthetic HTTP/WebSocket and record
 fixtures. It does not register anything, start DSH, call a model, or exercise the
 owner's third app. Live product/application qualification remains separate.
+
+## Preview 4 adapter acceptance
+
+Also run [runtime alignment](RUNTIME-ALIGNMENT.md) qualification. Verify requested
+harness/features fail before initialization when unavailable; no automatic
+harness fallback; grant revocation; foreign session/memory and shared
+administration denial; per-OS paths/private credentials/startup; actual packed
+client/tools against the immutable paired product source. Record physical and
+installed checks separately. Mac/Windows source tests do not certify a customer
+installation. Preserve DSH behavior and the two existing app deployments.

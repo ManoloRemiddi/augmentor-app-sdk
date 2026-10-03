@@ -39,3 +39,12 @@ The application owns canonical records, artifacts, provenance, source acknowledg
 Key error codes: `INVALID_MANIFEST`, `RUNTIME_UNAVAILABLE`, `INCOMPATIBLE_RUNTIME`, `INVALID_CALLER`, `INVALID_ARGUMENTS`, `PERMISSION_DENIED`, `NOT_CONNECTED`, `DISCONNECTED`, `UNKNOWN_OUTCOME`, `OPERATION_CONFLICT`, `STALE_ATTEMPT`, `RECONCILIATION_REQUIRED`, `BACKPRESSURE`. Operation IDs may be logged; credentials and private source content must not be. HTTP adapters preserve domain conflicts and limits in their structured errors.
 
 Source deletion, retention and export require coordination across application caches, artifacts, DSH history, derived memory and backups. This preview does not supply a universal erase API. Uninstalling the SDK package must not delete those stores or other applications' profiles.
+
+## Preview 4 source extension
+
+[Runtime alignment](RUNTIME-ALIGNMENT.md) specifies additive capability-schema 1
+states, explicit experimental Codex selection/connection identity, shared
+administration denial and platform startup/private-file adapters. DSH remains
+the default. Missing capability fields are unknown, never implied permission.
+The SDK protocol stays augmentor-app/1; older DSH contracts retain their baseline
+use without required new features. Windows Codex and Pi are unsupported.

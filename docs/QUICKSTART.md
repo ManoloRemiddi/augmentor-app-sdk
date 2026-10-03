@@ -1,6 +1,11 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Integrate an application
 
+This guide preserves the published preview 3 DSH/Linux installation recipe.
+For preview 4 source builds, explicit Codex selection or platform setup, first
+read [runtime alignment](RUNTIME-ALIGNMENT.md). Its helpers require the paired
+product candidate; installing the SDK alone does not update the product.
+
 Read [the agent entry guide](AGENT-INTEGRATION.md) first. These steps use an
 existing trusted single-owner Node application. The scaffold is integration code,
 not a separate reference app. Replace example IDs/ports with the target app's

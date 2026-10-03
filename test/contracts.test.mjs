@@ -8,8 +8,9 @@ import {OperationStore,JobStore,validateManifest,workspaceProfile} from '../src/
 const manifest={schemaVersion:1,id:'fixture',name:'Fixture',harness:'dsh',instructions:['role.md'],tools:[],permissions:{tools:[]},voice:{experimental:true,enabled:false}};
 const directory=t=>{const d=mkdtempSync(join(tmpdir(),'app-sdk-'));t.after(()=>rmSync(d,{recursive:true,force:true}));return d;};
 test('manifest rejects unsupported harnesses and undeclared authority',()=>{
-  for(const patch of [{harness:'pi'},{harness:'codex'},{permissions:{tools:['*']}},{voice:{experimental:false,enabled:true}},{secret:'accidental'}])assert.throws(()=>validateManifest({...manifest,...patch}));
+  for(const patch of [{harness:'pi'},{harness:'unknown'},{permissions:{tools:['*']}},{voice:{experimental:false,enabled:true}},{secret:'accidental'}])assert.throws(()=>validateManifest({...manifest,...patch}));
   assert.equal(validateManifest(manifest).voice.enabled,false);
+  assert.equal(validateManifest({...manifest,harness:'codex'}).harness,'codex');
 });
 test('workspace keeps private install options out of manifest and rejects file escapes',t=>{
  const root=directory(t);writeFileSync(join(root,'role.md'),'Role');

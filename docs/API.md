@@ -18,14 +18,15 @@ to download an unrelated public package when the local package is missing.
 | `init [directory] --id app-id --name "App name"` | Writes manifest plus integration scaffold. Preflights every output; refuses collisions. Defaults remain `my-app` / `My app`; use an explicit unique ID. Does not install dependencies, credentials or runtime. |
 | `validate manifest.json` | Schema, unique tool names/IDs, existing regular instruction/module files and symlink/path containment. Does not import modules or certify their exports/behavior. Paths are relative to the manifest's directory. |
 | `validate manifest.json --schema-only` | Schema and uniqueness only; for manifests whose files are not yet staged |
-| `doctor [descriptor]` | Reads selected runtime descriptor and SDK protocol/DSH contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
+| `doctor [descriptor] [--harness dsh|codex] [--runtime-root installed-root]` | Reads selected runtime descriptor and SDK protocol/DSH contract. `runningServicesVerified:false`: not a service, model, profile or voice check. |
 | `plan manifest.json private-install.json` | Read-only profile derivation. Shows exact identity, origin, grants and memory binding; omits credentials/tool configuration. Does not run the installer, check active identities, validate credentials or start services. |
 | `register manifest.json private-install.json` | Validates files/runtime, creates a private proxy credential if absent, delegates installation to the managed product. Does not restart services. |
 
 Failures exit nonzero and print a code/message when available. Schema failures
 include instance paths and the violated rule. Installation keys: `origin`
 (required), `toolConfig`, `root`, `descriptor`, `id`, `preset`, `memory`,
-`legacyPresets`, `tokenFile`. Unknown keys are rejected. `root` and `descriptor`,
+`legacyPresets`, `tokenFile`, `connection`, `runtimeRoot`. Codex requires an
+explicit existing connection ID. Descriptor/runtimeRoot are mutually exclusive. Unknown keys are rejected. `root` and `descriptor`,
 when supplied, must be absolute. The default root is the manifest directory.
 `toolConfig` keys must match declared plugin IDs and values must be objects;
 their internal fields are application-owned, not certified by plan.
@@ -50,7 +51,8 @@ case and supersedes the loopback port. There is no automatic tunnel provisioner.
 ## Native client
 
 ```js
-const client = new AugmentorClient({profile, descriptor, timeoutMs: 40000});
+const client = new AugmentorClient({profile, descriptor, harness: 'dsh',
+  requiredCapabilities: [], timeoutMs: 40000});
 try {
   await client.connect();
   console.log(client.capabilities.protocol); // workspace.describe result
@@ -122,3 +124,24 @@ App write endpoints must reject an attempt after cancellation/replacement/expiry
 and validate assignment/source freshness in the same transaction as their writes.
 `finish` may reconcile the same interrupted attempt; it cannot certify outputs.
 SQLite receipts cannot guarantee exactly-once effects at an arbitrary external API.
+
+## Preview 4 additive API
+
+`runtimePaths({platform?, home?, env?})` returns config/data/state/profiles,
+descriptor and installed runtimeRoot defaults. `discoverRuntime` additionally
+accepts `harness` (default dsh) and an installed `runtimeRoot` alternative to
+descriptor. It verifies the requested adapter, not service/model readiness.
+`AugmentorClient` accepts these plus `requiredCapabilities`; its
+`refreshCapabilities()` returns a newly negotiated snapshot without replay.
+`capabilityState(description,name)` and `requireCapabilities(description,names)`
+use the states described in [runtime alignment](RUNTIME-ALIGNMENT.md).
+
+`createApplicationTools` and `createToolClient` are exported from the root and
+`@augmentor/app-sdk/tools`. The former accepts the same tool tuples as
+`registerDshTools`, returns `{tools,execute}`, validates declared schemas and
+requires a string session identity. Execution accepts Codex `{sessionId,callId,
+signal}` or DSH `{agent:{id},callId,signal}`. The latter preserves stable receipt
+identity across these forms. `init --harness codex` adds the private connection
+placeholder and exports the shared applicationTools adapter. Existing DSH
+imports remain compatible. The older API table describes the released baseline;
+this additive section and alignment guide own the source candidate behavior.

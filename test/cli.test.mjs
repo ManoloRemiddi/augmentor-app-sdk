@@ -47,7 +47,7 @@ test('validate checks missing, directory and escaping files without executing to
   symlinkSync(cli,join(root,'escape.mjs'));
   writeFileSync(join(root,'augmentor.app.json'),JSON.stringify({...manifest,instructions:['escape.mjs']}));
   assert.match(run('validate','augmentor.app.json').stderr,/escapes/);
-  writeFileSync(join(root,'augmentor.app.json'),JSON.stringify({...manifest,harness:'codex'}));
+  writeFileSync(join(root,'augmentor.app.json'),JSON.stringify({...manifest,harness:'unsupported'}));
   assert.match(run('validate','augmentor.app.json').stderr,/\/harness:/);
 });
 test('plan reveals intended grants while keeping secrets private and creates no installation state',t=>{
@@ -77,4 +77,15 @@ test('doctor only establishes the selected contract and register fails before to
   writeFileSync(join(root,'descriptor.json'),JSON.stringify({root:join(root,'runtime'),node:process.execPath,python:'/usr/bin/python3'}));
   const result=run('doctor','descriptor.json');assert.equal(result.status,0,result.stderr);
   assert.equal(JSON.parse(result.stdout).runningServicesVerified,false);
+});
+
+test('Codex scaffold and plan require a private explicit connection and preserve harness identity',t=>{
+ const {root,run}=fixture(t);assert.equal(run('init','.','--id','codex-desk','--harness','codex').status,0);
+ const manifest=JSON.parse(readFileSync(join(root,'augmentor.app.json')));assert.equal(manifest.harness,'codex');
+ const example=JSON.parse(readFileSync(join(root,'augmentor/install.example.json')));assert.equal(example.connection,'existing-codex-connection-id');
+ writeFileSync(join(root,'private.json'),JSON.stringify({origin:'http://127.0.0.1:8000'}));
+ assert.match(run('plan','augmentor.app.json','private.json').stderr,/explicit existing connection/);
+ writeFileSync(join(root,'private.json'),JSON.stringify({origin:'http://127.0.0.1:8000',connection:'fixture-connection'}));
+ const result=run('plan','augmentor.app.json','private.json');assert.equal(result.status,0,result.stderr);assert.equal(JSON.parse(result.stdout).harness,'codex');
+ assert.equal(existsSync(join(root,'profiles')),false);
 });

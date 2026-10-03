@@ -14,7 +14,7 @@ Choose a stable app/profile ID; do not reuse `my-app` across installations.
 
 Read, in order:
 
-1. [Quick start](QUICKSTART.md): the complete install and wiring sequence.
+1. [Runtime alignment](RUNTIME-ALIGNMENT.md) for preview 4 source, then [Quick start](QUICKSTART.md): the complete install and wiring sequence.
 2. [Contract](CONTRACT.md) and [security](SECURITY.md): authority, recovery and trust.
 3. [API](API.md): exact exports, method signatures, defaults and ownership.
 4. [Acceptance](ACCEPTANCE.md): what must be demonstrated before saying it works.
@@ -22,8 +22,10 @@ Read, in order:
 
 Supported: trusted single-owner applications, Linux managed Augmentor runtime,
 DSH, Node 24.14+. A cloud-only app without access to an owner-managed Augmentor
-host is not this topology. macOS/Windows SDK installation, multi-tenant SaaS,
-untrusted plugins, Pi/Codex harnesses and cloud voice are not qualified here.
+host is not this topology. Customer macOS/Windows SDK installation, multi-tenant SaaS, untrusted plugins,
+Pi and cloud voice are not qualified here. Preview 4 source has an experimental
+Codex application adapter and OS startup/private-path contracts; use the alignment
+guide and its exact gates rather than treating product support as SDK qualification.
 Keep Resonant Voice experimental, optional and off initially.
 
 The repository and release assets are public. An agent can clone the source and

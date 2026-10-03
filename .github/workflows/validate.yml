@@ -5,7 +5,11 @@ permissions:
   contents: read
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-2025]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -18,3 +22,44 @@ jobs:
       - run: npm run test:package
       - run: npm audit --audit-level=moderate
       - run: npm pack --dry-run
+  paired-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: sdk
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: ManoloRemiddi/augmentor-agent
+          ref: c583475f4e6420ddc46df0c5a49cfe87545dd78c
+          path: product
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9
+        with:
+          version: '0.11.16'
+          enable-cache: false
+      - run: uv python install 3.13.5
+      - run: uv venv --python 3.13.5 .sdk-test-python
+      - name: Select isolated qualification interpreter
+        run: node -e "const fs=require('fs'),p=require('path');const py=p.resolve('.sdk-test-python',process.platform==='win32'?'Scripts/python.exe':'bin/python');fs.appendFileSync(process.env.GITHUB_ENV,'AUGMENTOR_PYTHON='+py+'\nPYTHONDONTWRITEBYTECODE=1\n');"
+      - if: runner.os == 'Windows'
+        run: uv pip install --python .sdk-test-python/Scripts/python.exe pywin32==312
+      - run: npm ci --ignore-scripts
+        working-directory: product
+      - run: npm run build
+        working-directory: product
+      - run: npm ci --ignore-scripts
+        working-directory: sdk
+      - name: Qualify packed SDK against immutable paired product source
+        run: npm run test:runtime -- ../product
+        working-directory: sdk
+      - name: Verify OS credential privacy and startup contracts
+        run: node -e "const cp=require('child_process');const r=cp.spawnSync(process.env.AUGMENTOR_PYTHON,['-m','unittest','discover','-s','tests','-p','test_app_sdk_platform.py','-v'],{stdio:'inherit'});process.exit(r.status??1);"
+        working-directory: product

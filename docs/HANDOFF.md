@@ -1,6 +1,15 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## Preview 4 source candidate — October 3, 2026
+
+[Runtime alignment](RUNTIME-ALIGNMENT.md) owns the new feature negotiation,
+harness-neutral tools, experimental Codex adapter, platform bootstrap and
+paired-package/platform qualification. This candidate is not a published
+release or live app cutover. Preserve the immutable preview 3 release and both
+existing preview 2 deployments.
+
+
 ## Public access — 1 October 2026
 
 The owner authorized making `ManoloRemiddi/augmentor-app-sdk` public. Source and

@@ -1,7 +1,7 @@
 {
   "name": "@augmentor/app-sdk",
-  "version": "0.1.0-preview.3",
-  "description": "Connect trusted applications to the maintained Augmentor agent through DSH",
+  "version": "0.1.0-preview.4",
+  "description": "Connect trusted applications to the maintained Augmentor agent through scoped harness adapters",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
@@ -11,6 +11,7 @@
     ".": "./src/index.mjs",
     "./browser": "./src/browser.mjs",
     "./dsh": "./src/dsh.mjs",
+    "./tools": "./src/tools.mjs",
     "./manifest.schema.json": "./schema/manifest.schema.json"
   },
   "bin": {
@@ -29,7 +30,8 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
-    "test:package": "node --test test/package/consumer.test.mjs"
+    "test:package": "node --test test/package/consumer.test.mjs",
+    "test:runtime": "node scripts/proof-runtime.mjs"
   },
   "dependencies": {
     "ajv": "8.20.0"

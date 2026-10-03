@@ -14,7 +14,11 @@ test('shipped archive installs in a clean consumer and its generated adapter pas
   const run=(cmd,args,cwd=consumer)=>{
     const env={...process.env,XDG_CONFIG_HOME:join(root,'config'),XDG_DATA_HOME:join(root,'data'),AUGMENTOR_WORKSPACE_PROFILES:join(root,'profiles')};
     delete env.NODE_TEST_CONTEXT;
-    const result=spawnSync(cmd,args,{cwd,encoding:'utf8',timeout:60000,env});
+    if(cmd==='npm'&&process.platform==='win32'){
+      assert.ok(process.env.npm_execpath,'Run Windows package acceptance through npm run test:package');
+      cmd=process.execPath;args=[process.env.npm_execpath,...args];
+    }
+    const result=spawnSync(cmd,args,{cwd,encoding:'utf8',timeout:60000,env,windowsHide:true});
     assert.equal(result.status,0,result.stderr+'\n'+result.stdout);return result.stdout;
   };
   const [packed]=JSON.parse(run('npm',['pack','--ignore-scripts','--json','--pack-destination',root],repository));
@@ -25,7 +29,7 @@ test('shipped archive installs in a clean consumer and its generated adapter pas
   run('npm',['install','--ignore-scripts','--no-audit','--no-fund',join(root,packed.filename)]);
   // Repeat from the generated consumer lock to catch nonportable dependency paths.
   run('npm',['ci','--ignore-scripts','--no-audit','--no-fund']);
-  const cli=join(consumer,'node_modules/.bin/augmentor-app');
+  const cli=join(consumer,'node_modules/@augmentor/app-sdk/bin/augmentor-app.mjs');
   assert.match(run(process.execPath,[cli,'--help']),/read-only|previews identity/);
   run(process.execPath,[cli,'init','.','--id','fixture-records','--name','Fixture records']);
   run(process.execPath,[cli,'validate','augmentor.app.json']);
