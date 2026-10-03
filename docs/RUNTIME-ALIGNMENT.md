@@ -134,12 +134,47 @@ replacement; an app closing must not stop another app's shared service.
 | Linux / DSH | Existing protocol preserved, new feature snapshot | Earlier preview 2 qualification; no new live deployment |
 | Linux / Codex | Experimental app adapter and actual engine fixture | Pending |
 | macOS / DSH | Bootstrap/startup paths and common SDK contract | Pending |
-| macOS / Codex | Experimental adapter, hosted qualification required | Pending |
+| macOS / Codex | Experimental adapter and actual engine fixture | Pending |
 | Windows / DSH | Bootstrap/private ACL/startup adapter | Pending |
 | Windows / Codex | Explicitly unsupported | No adapter claimed |
 | Pi / cloud voice | Outside this SDK extension | Not implemented |
 
 ## Qualification and compatibility maintenance
+
+### Current functional pair — October 3
+
+The source under qualification is SDK
+[`925b72e`](https://github.com/ManoloRemiddi/augmentor-app-sdk/commit/925b72eeaa651fc254f46b30d3dbbcc7b596d3a8)
+with product
+[`8a085be`](https://github.com/ManoloRemiddi/augmentor-agent/commit/8a085be67f50d7b39e5639cdb1916e09517de805).
+This pair includes the current public Handy corrections, workspace-local thinking
+and appearance persistence, and direct registration identifier validation.
+Later documentation-only commits do not change these tested source files.
+
+| Gate for this exact pair | Current result |
+| --- | --- |
+| SDK source, packed consumer and paired runtime on Linux/macOS/Windows | All six jobs pass in [37116697011](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37116697011) |
+| Product OS-private files, startup and workspace contracts | All three platforms pass in [37116596807](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596807) |
+| macOS 14/26 packaged runtime, including shipped SDK helpers | Pass in [37116596912](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596912) |
+| Windows x64/ARM64 desktop | Pass in [37116596991](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596991) |
+| Full Linux/source/native/installed-package/Browser regression | Still running in [37116596924](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596924) |
+| Windows x64/ARM64 packaged runtime and install/repair/removal | Still pending in [37116596824](https://github.com/ManoloRemiddi/augmentor-agent/actions/runs/37116596824) |
+
+The paired engine proof uses the actual pinned Codex binary with synthetic
+provider replies on Linux/macOS. Windows verifies supported DSH/platform
+contracts and private files; it does not run or qualify Codex there. Four actual
+isolated Chromium renders of product `8a085be` were inspected in light/dark
+themes at 1100×760 and 400×780. Scoped navigation and the thinking selector fit
+without visible errors. Synthetic workspace/runtime replies and disposable
+browser profiles make this component presentation evidence, not an installed
+customer app or real-provider check.
+
+Published preview 3, both recorded preview 2 app deployments, and the owner's
+independent third-app test are unchanged. No new package or product release,
+merge, live app migration, login service or model configuration is claimed.
+The customer installation column above and the release gates below remain open.
+
+### Reproduction
 
 From the SDK source checkout, run source/packed checks, then build the exact
 paired public product source and:
@@ -158,6 +193,12 @@ SDK CI tests Linux/macOS/Windows packages and pins the paired product source
 [`8a085be`](https://github.com/ManoloRemiddi/augmentor-agent/commit/8a085be67f50d7b39e5639cdb1916e09517de805)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
+
+### Earlier qualification checkpoints
+
+The following dated evidence is historical. The current pair and result table
+above supersede earlier running/pending statuses; earlier passes apply only to
+their stated source, not subsequent functional changes.
 
 The [six-job SDK matrix 37113782817](https://github.com/ManoloRemiddi/augmentor-app-sdk/actions/runs/37113782817)
 passes on Linux, Mac and Windows at SDK `9a06429`, paired with product `6c3b1ca`.

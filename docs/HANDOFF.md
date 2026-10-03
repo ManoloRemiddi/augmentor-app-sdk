@@ -9,6 +9,13 @@ paired-package/platform qualification. This candidate is not a published
 release or live app cutover. Preserve the immutable preview 3 release and both
 existing preview 2 deployments.
 
+Current functional pair: SDK `925b72e` / product `8a085be`. The alignment guide
+records passing SDK/platform/Mac-bundle/Windows-desktop checks, the still-live
+full product and Windows installation gates, and the customer-release limits.
+Its newest checkpoint supersedes historical pending statuses without relabelling
+older test runs. The agent entry guide also distinguishes the released DSH task
+from an explicitly authorized experimental Codex source integration.
+
 
 ## Public access — 1 October 2026
 
