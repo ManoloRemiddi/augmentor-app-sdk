@@ -7,6 +7,11 @@ preview 2 deployment. This guide owns the candidate's added contracts and
 qualification boundary. Neither cloning source nor installing its package
 updates an existing Augmentor installation.
 
+The owner has authorized integrating this qualified SDK/product source update.
+Current source builds preview 4; release archive, runtime installation and app
+migration remain separate. [Compatibility maintenance](MAINTENANCE.md) defines
+the required impact review for future harness, OS, UI and settings changes.
+
 ## Availability is a negotiated contract
 
 Apps still use `augmentor-app/1`. `AugmentorClient` accepts `harness` (default
@@ -170,9 +175,11 @@ replacement/source restoration, refuse redirected paths, and retain persistent
 data on removal. No provider request is made by the SDK bundle proof.
 
 This completes qualification of the development source candidate, not customer
-SDK deployment. [SDK PR #2](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/2)
+SDK deployment. At this qualification checkpoint,
+[SDK PR #2](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/2)
 and [product PR #34](https://github.com/ManoloRemiddi/augmentor-agent/pull/34)
-remain open drafts. No merge, new release archive or live migration is included.
+were open drafts. The later owner-authorized source integration preserves this
+functional pair and does not include a new release archive or live migration.
 The clean packed-consumer check also passes locally with the final developer
 guides, exercising the shipped scaffold's HTTP/socket/tool boundaries in
 temporary state. It does not register a real application or call a model.

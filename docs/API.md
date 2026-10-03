@@ -38,7 +38,7 @@ their internal fields are application-owned, not certified by plan.
 | `validateManifest(value)` | Returns a cloned valid manifest; no file checks |
 | `validateApplication(value, {root})` | Adds read-only existing-file and containment checks; returns the cloned manifest |
 | `workspaceProfile(manifest, {root, origin, tokenFile, toolConfig?, id?, preset?, memory?, legacyPresets?})` | Pure profile construction with file checks; does not install. Exact HTTPS/loopback origin; absolute proxy token path. Default preset `augmentor-<id>`, memory person `app-<id>-owner`, project canonical cwd. |
-| `discoverRuntime({descriptor?} = {})` | Resolves selected managed descriptor/contract. Default `$XDG_DATA_HOME/augmentor/desktop.json`, or `~/.local/share/augmentor/desktop.json`. Does not establish running readiness. |
+| `discoverRuntime({descriptor?, runtimeRoot?, harness='dsh'} = {})` | Resolves the managed descriptor or installed bundle bootstrap and verifies the requested harness/platform contract. Descriptor and runtimeRoot are mutually exclusive. Defaults come from `runtimePaths()`. Does not establish running readiness. |
 | `createProxy({profile, origin, tokenFile, authorize, socketPath?, port=8872, path='/augmentor/'})` | Returns async `http(req,res)` / `upgrade(req,socket,head)`. Server-only. Owner callback may be async; it must return exactly `true`. Route only matching paths. HTTPS/owner access is host-owned. |
 | `AugmentorError` | `Error` with `.code` and `.details`. Log only selected non-private details. |
 | `SDK_PROTOCOL` | `augmentor-app/1` |
@@ -65,7 +65,7 @@ try {
 
 | Member | Meaning |
 | --- | --- |
-| `connect()` | Coalesces concurrent calls, negotiates workspace/DSH/product and initializes the bridge. Resolves to client. No prompt is submitted. |
+| `connect()` | Coalesces concurrent calls, negotiates workspace/requested harness/product, checks required capabilities and initializes the bridge. Resolves to client. No prompt is submitted. |
 | `createSession(sessionId = randomUUID())` | Sends `session.create`; returns the product result object, not the session ID string. Generate/persist your own ID when you need it later. |
 | `prompt({sessionId, operationId, text, context?})` | Nonempty text; stable persisted operation ID becomes product `requestId`. Queue acknowledgment is not task completion. |
 | `listSessions()` | Product `session.list` result. A returned row's `running:false` is an observation; a missing row is not proof of non-execution. |
@@ -73,7 +73,7 @@ try {
 | `call(method, params={})` | Advanced passthrough to supported, workspace-authorized product commands. Does not add methods or bypass policy. For history: `call('session.history', {sessionId})`. Returned events retain product shapes; see matching product code before consuming other commands/events. |
 | `on('event', handler)` | Receives unsolicited product messages `{method, params, ...}`; not a normalized stream of tokens |
 | `on('disconnected', handler)` | Connection lost; pending mutations may have unknown outcomes. Explicit `connect()` may reconnect; no request is replayed. |
-| `close()` | Disposes this transport permanently; make a new client afterwards. Does not mean DSH work has been cancelled. |
+| `close()` | Disposes this transport permanently; make a new client afterwards. Does not mean harness work has been cancelled. |
 
 Do not chain an untracked `randomUUID()` directly inside a prompt call. Persist
 session ID, operation ID and prompt input **before** submission. On
@@ -144,8 +144,8 @@ requires a string session identity. Execution accepts Codex `{sessionId,callId,
 signal}` or DSH `{agent:{id},callId,signal}`. The latter preserves stable receipt
 identity across these forms. `init --harness codex` adds the private connection
 placeholder and exports the shared applicationTools adapter. Existing DSH
-imports remain compatible. The older API table describes the released baseline;
-this additive section and alignment guide own the source candidate behavior.
+imports remain compatible. This additive section and alignment guide describe
+source candidate behavior; the immutable preview 3 package has its own API guide.
 
 `prompt({sessionId,operationId,text,context?})` and browser `setContext(context)`
 accept JSON objects of at most 16,000 UTF-8 bytes and 64 nested levels. Invalid

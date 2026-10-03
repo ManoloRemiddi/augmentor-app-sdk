@@ -18,6 +18,7 @@ The initial target is a single owner installing trusted applications on Linux, i
 - [Security and trust](docs/SECURITY.md): enforced boundaries and limits.
 - [Qualification and handoff](docs/HANDOFF.md): reproducible tests and remaining gates.
 - [Readiness](docs/READINESS.md) and [exact qualification](docs/QUALIFICATION.md): feasibility, release evidence and rollout status.
+- [Compatibility maintenance](docs/MAINTENANCE.md): keep SDK contracts, product adapters, settings and qualification aligned as Augmentor changes.
 
 ## Install
 
@@ -26,9 +27,11 @@ For new integrations, download the archive and checksum from the
 The two qualified live apps remain on preview 2; this onboarding release does not
 redeploy them. The repository and release assets are public; no GitHub account is needed to read
 the source or download the SDK.
-Use the current documentation on main for deployment notes. To build source
-yourself, clone this public repository (check out
-`v0.1.0-preview.3` to reproduce that release), then:
+Use the current documentation on main for deployment notes. For the released
+DSH/Linux baseline, check out `v0.1.0-preview.3` before building. Current source
+builds `0.1.0-preview.4`; use the immutable paired product revision in
+[runtime alignment](docs/RUNTIME-ALIGNMENT.md) for development qualification.
+In either checkout, run:
 
 ```sh
 npm ci --ignore-scripts
@@ -37,13 +40,15 @@ npm run test:package
 npm pack
 ```
 
-The development branch `feat/runtime-capability-alignment` instead builds
-`0.1.0-preview.4`. Its [alignment guide](docs/RUNTIME-ALIGNMENT.md) identifies the
-exact paired product source and unfinished customer-installation gates. Use the
-resulting preview 4 archive only for that development candidate; the published
-preview 3 archive and existing live apps remain unchanged.
+Use a source-built preview 4 archive only for the development candidate. The
+published preview 3 archive and existing live apps remain unchanged. Installing
+preview 4 alone does not add its adapters to an older Augmentor installation.
 
-Install the resulting `augmentor-app-sdk-0.1.0-preview.3.tgz` in your application using `npm install /absolute/path/to/the-package.tgz`. No public npm package is claimed. For reproducible deployment, keep a reviewed package copy in your application's `vendor/` directory and commit its lockfile and provenance. The package contains the SDK, not another copy of Augmentor.
+Install the archive matching the checkout's package version in your application
+using `npm install /absolute/path/to/the-package.tgz`. No public npm package is
+claimed. For reproducible deployment, keep a reviewed package copy in your
+application's `vendor/` directory and commit its lockfile and provenance. The
+package contains the SDK, not another copy of Augmentor.
 
 From your application directory after installing the package:
 
