@@ -127,7 +127,7 @@ foreign/shared denial, completed-operation no replay and durable reopening.
 Windows runs the feature contract plus the separate product Python private-file
 proof; it never substitutes a simulated Codex run for unsupported Windows IPC.
 SDK CI tests Linux/macOS/Windows packages and pins the paired product source
-[`20a6398`](https://github.com/ManoloRemiddi/augmentor-agent/commit/20a639863780b3f0bffb182c4b6ec08bd29d3ad7)
+[`a15ba2d`](https://github.com/ManoloRemiddi/augmentor-agent/commit/a15ba2d1e56dc673a805907ae2bc70bec5ed1340)
 by immutable commit. Product platform CI independently verifies OS private files
 and startup contracts. Pending hosted checks are not passing evidence.
 
@@ -139,6 +139,13 @@ Windows database cleanup because cleanup preceded closing its SQLite handles;
 the corrected fixture closes handles before removal. Product-owned Mac path and
 Windows quoting fixtures are corrected in the pinned follow-up above. Fresh
 hosted results remain required; these corrections do not qualify an installed app.
+
+Windows then passed all 28 SDK source cases and exposed a real packed adapter
+issue: importing DSH's resolved drive-letter filename as an ESM URL failed.
+The adapter now converts the resolved filename to a file URL on every platform;
+the existing packed-consumer test exercises this exact import path. The paired
+product also keeps embedded model connection administration in standalone
+Augmentor, covered by its actual settings-entrypoint fixture.
 
 Maintain the same contract in both repositories. New shared settings, harness,
 platform bootstrap, IPC, tool policy or lifecycle behavior needs a paired impact
