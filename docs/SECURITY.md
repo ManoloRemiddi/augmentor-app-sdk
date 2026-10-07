@@ -28,6 +28,10 @@ visible; agent preference suggestions cannot override confirmed owner preference
 endpoint has its own credential and refuses browser origins; automation has a pause switch,
 budgets and quiet hours.
 
+The native host started by `AugmentorClient` inherits the application process environment
+(B6), including any secrets in it. Start background clients from a process whose environment
+holds only what Augmentor needs, or launch them from a dedicated worker.
+
 Not claimed: approval UI inside the maintained panel (specified, not implemented); hosted
 multi-user pairing; defence against a malicious owner-installed tool module or handler; that
 `untrustedOutput` marking prevents prompt injection (it reduces it; keep irreversible actions

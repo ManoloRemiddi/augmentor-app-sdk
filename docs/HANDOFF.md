@@ -17,7 +17,10 @@ Playwright against a synthetic stand-in panel), the DSH descriptor tests against
 dsh-tools 0.1.5-rc.1 schema compiler, and `scripts/proof-dsh.mjs` against the real DSH tool
 runtime (dsh-tools/system-prompt/scope 0.1.5-rc.1, cordis 4.0.2 installed from npm): the
 starter's constrained tool and nested required fields register and validate, where the
-preview 4 source failed silently with `unknown tool`. Not done: paired product proof against an
+preview 4 source failed silently with `unknown tool`. The paired product proof
+(`npm run test:runtime`) passes 27/27 against a built copy of product `main` `9fa2317` with the
+packed 0.2 SDK (Linux), confirming the 0.1 client and tool modules the product imports remain
+compatible. CI still pins product `8a085be`; the other platforms were not run. Not done: paired product proof against an
 installed runtime, any platform matrix, any live application change, the panel protocol v2
 product implementation, publication. Preview 4 evidence below remains tied to its commits.
 
