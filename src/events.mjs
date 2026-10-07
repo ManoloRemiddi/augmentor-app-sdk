@@ -4,6 +4,7 @@
 // triggers subscribe to start agent work. Events are notifications, never commands.
 import {randomUUID} from 'node:crypto';
 import {check} from './errors.mjs';
+import {fromNode, fromFetch} from './http.mjs';
 
 export const EVENT_TYPE = /^[a-z][a-z0-9_.-]{0,95}$/;
 const MAX_EVENT_BYTES = 64 * 1024;
@@ -72,7 +73,7 @@ export function createEventStream(hub, {authorize, types = ['*'], filter = () =>
   };
   return {
     async node(req, res) {
-      let ok = false; try {ok = await authorize(req) === true;} catch {}
+      let ok = false; try {ok = !!(await authorize(fromNode(req)));} catch {}
       if (!ok) {res.writeHead(403, {'Cache-Control': 'no-store'}); res.end(); return;}
       res.writeHead(200, {'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no'});
       res.write('retry: 3000\n\n');
@@ -80,7 +81,7 @@ export function createEventStream(hub, {authorize, types = ['*'], filter = () =>
       req.on('close', stop);
     },
     async fetch(request) {
-      let ok = false; try {ok = await authorize(request) === true;} catch {}
+      let ok = false; try {ok = !!(await authorize(fromFetch(request)));} catch {}
       if (!ok) return new Response(null, {status: 403, headers: {'Cache-Control': 'no-store'}});
       const encoder = new TextEncoder(); let stop;
       const body = new ReadableStream({
