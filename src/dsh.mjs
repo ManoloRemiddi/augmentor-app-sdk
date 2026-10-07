@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {realpathSync} from 'node:fs';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {createApplicationTools} from './tools.mjs';
+import {toDshParameters} from './dsh-schema.mjs';
 export {createToolClient} from './tools.mjs';
 export async function registerDshTools(ctx,{definitions,execute,defineTool:factory}) {
   if(!factory){
@@ -10,8 +11,10 @@ export async function registerDshTools(ctx,{definitions,execute,defineTool:facto
     const base=process.argv[1]?realpathSync(process.argv[1]):fileURLToPath(import.meta.url);
     const require=createRequire(base);factory=(await import(pathToFileURL(require.resolve('@deepseek-ai/dsh-tools')).href)).defineTool;}
   const application=createApplicationTools({definitions,execute});
-  for(const [name,description,parameters] of definitions){
-    ctx.tools.register(factory({name,description,parameters,output:{schema:{type:'string'},render:(_args,value)=>[{type:'text',text:value}]},
+  const schemas=new Map(application.tools.map(tool=>[tool.name,tool.inputSchema]));
+  for(const [name,description] of definitions){
+    // DSH accepts a stricter descriptor DSL than JSON Schema; the SDK still validates the full schema.
+    ctx.tools.register(factory({name,description,parameters:toDshParameters(schemas.get(name)),output:{schema:{type:'string'},render:(_args,value)=>[{type:'text',text:value}]},
       async execute(args,execution){return JSON.stringify(await application.execute(name,args,execution));}
     }));
   }
