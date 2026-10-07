@@ -6,7 +6,7 @@ import {discoverRuntime,runtimeLaunch} from './runtime.mjs';
 import {requireCapabilities} from './capabilities.mjs';
 import {snapshotContext} from './context.mjs';
 import {AugmentorError, check, SDK_PROTOCOL, isId} from './errors.mjs';
-const READS = new Set(['workspace.describe','initialize','augmentor/handshake','session.list','session.history','session.models','augmentor/models']);
+const READS = new Set(['workspace.describe','initialize','augmentor/handshake','session.list','session.history','session.models','augmentor/models','augmentor/prompts']);
 const codexId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 export class AugmentorClient extends EventEmitter {
   constructor({profile, descriptor,runtimeRoot,harness='dsh', requiredCapabilities = [], timeoutMs = 40000, start = spawn} = {}) {
@@ -52,7 +52,12 @@ export class AugmentorClient extends EventEmitter {
         if (p) {
           this.pending.delete(message.id); clearTimeout(p.timer);
           message.error ? p.reject(new AugmentorError(message.error.code || (READS.has(p.method) ? 'REMOTE_ERROR' : 'UNKNOWN_OUTCOME'), message.error.message, {operationId: p.operationId})) : p.resolve(message.result);
-        } else if (message.method) this.emit('event', message);
+        } else if (message.method) {
+          // Notifications (and answerable interaction requests, which carry an id) are
+          // emitted generically and by method name, e.g. 'session.event', 'approval.requested'.
+          this.emit('event', message);
+          this.emit(message.method, message.params ?? {}, message);
+        }
       }
     });
     try {
@@ -92,10 +97,39 @@ export class AugmentorClient extends EventEmitter {
     return requireCapabilities(description, this.requiredCapabilities);
   }
   listSessions() {return this.call('session.list');}
-  prompt({sessionId, operationId, text, context}) {
+  prompt({sessionId, operationId, text, context, mode = 'queue', attachments = []}) {
     check(isId(sessionId) && isId(operationId) && typeof text === 'string' && text.trim(), 'INVALID_REQUEST', 'Session, stable operation ID and non-empty text are required');
     check(this.harness!=='codex'||codexId(sessionId)&&(codexId(operationId)||/^resonant-voice:[a-f0-9-]{36}$/.test(operationId)), 'INVALID_ID', 'Codex IDs must use at most 128 letters, digits, underscores or hyphens');
-    return this.call('session.prompt', {sessionId, requestId: operationId, mode: 'queue', content: [{type:'text', text}], ...(context !== undefined ? {workspaceContext: snapshotContext(context)} : {})});
+    check(['queue','steer'].includes(mode), 'INVALID_REQUEST', 'Prompt mode must be queue or steer');
+    check(Array.isArray(attachments) && attachments.length <= 8 && attachments.every(a => a && a.type === 'image' && typeof a.mediaType === 'string' && /^image\/(png|jpeg|gif|webp)$/.test(a.mediaType) && typeof a.data === 'string'),
+      'INVALID_REQUEST', 'Attachments must be at most eight base64 images (png, jpeg, gif or webp)');
+    // DSH treats session.prompt as idempotent per requestId, so the operation ID is the replay guard.
+    return this.call('session.prompt', {sessionId, requestId: operationId, mode, content: [{type:'text', text}, ...attachments.map(({type, mediaType, data}) => ({type, mediaType, data}))], ...(context !== undefined ? {workspaceContext: snapshotContext(context)} : {})});
+  }
+  sessionCheck(sessionId) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness');}
+  /** Paged transcript; the header's `running` flag is a lookup by ID that list() may truncate. */
+  history(sessionId, {maxMessages = 50, beforeSeq} = {}) {
+    this.sessionCheck(sessionId);
+    check(Number.isInteger(maxMessages) && maxMessages >= 1 && maxMessages <= 200, 'INVALID_REQUEST', 'maxMessages must be 1 to 200');
+    return this.call('session.history', {sessionId, maxMessages, ...(beforeSeq === undefined ? {} : {beforeSeq})});
+  }
+  async getSession(sessionId) {const page = await this.history(sessionId, {maxMessages: 1}); return {sessionId, running: page.running === true, header: page.header ?? null};}
+  models(sessionId) {this.sessionCheck(sessionId); return this.call('session.models', {sessionId});}
+  /** Selection fields are passed through (DSH: provider, model, reasoningEffort). */
+  selectModel(sessionId, selection) {
+    this.sessionCheck(sessionId);
+    check(selection && typeof selection === 'object' && !Array.isArray(selection), 'INVALID_REQUEST', 'A model selection object is required');
+    return this.call('session.selectModel', {sessionId, ...selection});
+  }
+  rename(sessionId, title) {
+    this.sessionCheck(sessionId);
+    check(typeof title === 'string' && title.trim() && title.length <= 200, 'INVALID_REQUEST', 'A title of at most 200 characters is required');
+    return this.call('session.rename', {sessionId, title: title.trim()});
+  }
+  /** Answer an approval ({outcome: 'allowed-once'|'rejected'}) or question ({answer: {answers: [...]}}). */
+  answerInteraction(id, value) {
+    check(typeof id === 'string' && id.length <= 200 && value && typeof value === 'object', 'INVALID_REQUEST', 'An interaction ID and answer are required');
+    return this.call('augmentor/interaction', {id, value});
   }
   cancel(sessionId) {check(this.harness==='codex'?codexId(sessionId):isId(sessionId), 'INVALID_ID', 'Invalid session ID for the selected harness'); return this.call('session.cancel', {sessionId});}
   close() {
