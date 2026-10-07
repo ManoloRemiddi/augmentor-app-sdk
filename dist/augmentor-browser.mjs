@@ -190,7 +190,7 @@ const CSS = `
 .augmentor-toast{padding:.6rem .9rem;border-radius:8px;background:var(--augmentor-ui-toast,#111827);color:var(--augmentor-ui-on-toast,#fff);box-shadow:0 4px 18px rgba(0,0,0,.2)}
 .augmentor-toast a{color:inherit;margin-left:.5rem}
 .augmentor-overlay{position:fixed;inset:auto 1rem 1rem auto;width:min(520px,94vw);max-height:80vh;overflow:auto;background:var(--augmentor-ui-overlay,#fff);color:var(--augmentor-ui-text,#111);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.25);padding:1rem;z-index:2147482999}
-.augmentor-overlay>.augmentor-close{float:right;border:0;background:transparent;font-size:1.2rem;cursor:pointer}
+.augmentor-overlay>.augmentor-close{display:block;margin-left:auto;border:0;background:transparent;font-size:1.2rem;cursor:pointer;color:inherit}
 `;
 
 function ensureStyles(doc = document) {
