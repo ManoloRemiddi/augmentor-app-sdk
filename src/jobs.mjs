@@ -11,7 +11,7 @@ export class JobStore {
   }
   get(id) {const r=this.db.prepare('SELECT * FROM jobs WHERE id=?').get(id);return r ? {...r,input:JSON.parse(r.input),result:r.result ? JSON.parse(r.result):null}:null;}
   enqueue(key,input) {
-    check(isId(key),'INVALID_ID','Stable job key required');const body=canonicalJSON(input), id=randomUUID();
+    check(isId(key),'INVALID_ID','Stable job key required');check(input!==undefined,'INVALID_REQUEST','Job input is required; use null for none');const body=canonicalJSON(input), id=randomUUID();
     this.db.prepare('INSERT OR IGNORE INTO jobs VALUES(?,?,?,?,?,?,?,?)').run(id,key,body,'queued',null,null,0,null);
     const row=this.db.prepare('SELECT * FROM jobs WHERE job_key=?').get(key);
     check(row.input===body,'JOB_CONFLICT','Job key belongs to different input');return this.get(row.id);

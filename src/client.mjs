@@ -46,6 +46,7 @@ export class AugmentorClient extends EventEmitter {
         if (!size || size > 20 * 1024 * 1024) {fail(); child.kill(); return;}
         if (buffer.length < size + 4) return;
         let message; try {message = JSON.parse(buffer.subarray(4, size + 4));} catch {fail(); child.kill(); return;}
+        if (!message || typeof message !== 'object' || Array.isArray(message)) {fail(); child.kill(); return;}
         buffer = buffer.subarray(size + 4);
         const p = this.pending.get(message.id);
         if (p) {
@@ -72,8 +73,9 @@ export class AugmentorClient extends EventEmitter {
     if (!this.child?.stdin.writable) return Promise.reject(new AugmentorError('NOT_CONNECTED', 'Connect to Augmentor before making a request'));
     const child = this.child, id = randomUUID(), operationId = params.requestId;
     const body = Buffer.from(JSON.stringify({id, method, params}));
-    check(body.length <= 1024 * 1024, 'REQUEST_TOO_LARGE', 'Native request exceeds 1 MiB');
-    check(this.pending.size < 64 && child.stdin.writableLength < 2 * 1024 * 1024, 'BACKPRESSURE', 'Too many pending Augmentor requests');
+    // Every refusal is a rejected promise and nothing was sent, so callers need one error path.
+    if (body.length > 1024 * 1024) return Promise.reject(new AugmentorError('REQUEST_TOO_LARGE', 'Native request exceeds 1 MiB'));
+    if (this.pending.size >= 64 || child.stdin.writableLength >= 2 * 1024 * 1024) return Promise.reject(new AugmentorError('BACKPRESSURE', 'Too many pending Augmentor requests'));
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {this.pending.delete(id); reject(this.failure(method, operationId, id));}, this.timeoutMs);
       this.pending.set(id, {resolve, reject, timer, method, operationId});
