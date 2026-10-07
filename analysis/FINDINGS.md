@@ -1,8 +1,8 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Ecosystem analysis: findings, problems and candidate solutions
 
-**Status: living analysis, started 2026-10-07, last updated 2026-10-07 (reference apps
-added). No code has been changed because of it yet.**
+**Status: living analysis, started 2026-10-07. Implementation of the resulting plan
+(PLAN.md) is in progress on this branch; each fix is recorded in the log.**
 
 This document records what we are learning about the Augmentor App SDK and
 everything it depends on, before any new code is written. Each finding states the
@@ -281,6 +281,20 @@ Reported by analysis agent:
   interrupted jobs without raw SQL.
 - The 15 s proxy socket idle timeout also applies to streaming responses.
 - Only a `typeof` check tests `mountAugmentor`.
+
+#### B8. The starter template's tool is rejected by real DSH — Medium/High
+
+- **Evidence:** Reproduced against the real DSH 0.1.5-rc.1 schema compiler (dsh-tools
+  `lib/types/schema.js`): `registerDshTools` passes the app's parameters unchanged to
+  `defineTool`, whose descriptor DSL accepts only `description`, `title`, `default` and
+  `examples` as annotations. The template declares `minLength`/`maxLength`, so DSH
+  refuses with "parameters.id.minLength is not supported by the value schema DSL". The
+  SDK's tests use a fake `defineTool`, which hid it.
+- **Impact:** an integrator following the template gets a tool plugin that fails to
+  load in the real runtime.
+- **Candidate solution:** compile JSON Schema to the DSH descriptor DSL (constraints the
+  DSL cannot express are enforced by the SDK's AJV validation and described in text),
+  and test against the real compiler.
 
 ### C. Browser embedding API (`@augmentor/app-sdk/browser`)
 
@@ -591,6 +605,28 @@ self-contained browser bundle.
 - **Candidate solution:** a documented harness that drives tools and approvals
   deterministically, as the product's DSH proofs already do.
 
+#### E12. Runtime limits that affect headless use — Medium
+
+- **Evidence:** Reported by the product analysis (product `9fa2317`), partly confirmed:
+  - a native connection follows at most two sessions for events; older follows drop;
+  - every `session.prompt` claims a 15 s interaction lease; while the embedded panel holds
+    a session's lease, a server-side prompt to the same session fails with "Another
+    Augmentor window owns these interactions";
+  - a headless client that ignores `approval.requested` / `question.requested` leaves the
+    turn waiting until it is aborted.
+- **Candidate solutions:** SDK runners use their own sessions, answer or reject
+  interactions by policy, and fall back to `session.history` headers; product-side:
+  more follows and a lease-sharing rule (PANEL-PROTOCOL).
+
+#### E13. App repository instructions and user skills leak into workspace sessions — Medium
+
+- **Evidence:** Reported by the product analysis: DSH resolves the project root from the
+  workspace `cwd` (nearest `.git`), so the app repository's developer `AGENTS.md` and the
+  user's `~/.agents/skills` become visible to end-user workspace sessions.
+- **Candidate solution:** a product option to exclude skill roots and agent instruction
+  files for workspace presets; meanwhile, keep developer-only instructions out of the
+  app's runtime root.
+
 ### K. Server-side agent work (background jobs)
 
 #### K1. Background jobs need a supported runner; one app built its own — Medium
@@ -628,6 +664,31 @@ self-contained browser bundle.
   own loop. This is C2 seen from the app side.
 - **Candidate solution:** C2's write-completed event in the panel, plus a
   server-side hook or event for writes made by background sessions.
+
+### L. Hosted multi-user apps (from the tutoring app analysis)
+
+Analysed at the owner's request (main `b10272d`, integration branch `3951d1a`). It
+corrects A1's report: there is no second loop beside the runtime; on both branches an
+in-page fake `augmentor/1` host replaces the runtime and uses the app's cloud model, and
+the DSH tool path is unused configuration. New requirements:
+
+| ID | Requirement |
+| --- | --- |
+| L1 | A supported cloud or bring-your-own-model backend using the same tool declarations, as fallback when no local runtime exists |
+| L2 | Browser-side detection of the user's runtime and a status API (a server probe is meaningless when hosted) |
+| L3 | Prompt templates with typed slots, send or prefill, fresh, and a policy for a running turn |
+| L4 | Modes or personas as a first-class instruction overlay |
+| L5 | App-declared approval presenters (summary template, action label, partial accept, edit) |
+| L6 | Generative UI primitives: question/choice, graded quiz item, selectable card list, plan with toggles |
+| L7 | Account-bound sessions, memory and learner profile |
+| L8 | Record versions for agent appends to user-edited text |
+| L9 | Identity and entitlement bridging between per-user runtime credentials and app accounts |
+| L10 | Configurable loop limits (steps, result size, history window) |
+| L11 | Provenance marking for tool results that carry untrusted content |
+| L12 | Host commands to open, focus and collapse the panel |
+| L13 | Routing app-side model jobs to the cloud model or the user's runtime |
+
+Security issues on that branch are tracked with the owner by title only (see I).
 
 ### H. Licensing
 
@@ -763,3 +824,7 @@ Further material from the owner will be analysed and added here.
   Added use cases (2a), A2–A3, C9–C10, D3–D8, E10–E11, F10–F13, theme K, the
   integrator-needs table (4a), Q6–Q9, and private-app titles in I. Confirmed F1
   would break both apps' panel on an upgrade past preview 2. No code changed.
+- **2026-10-07** — Deep analysis and research for SDK 0.2: added B8 (reproduced against the
+  real DSH compiler), E12, E13 and theme L (tutoring app, analysed at the owner's
+  request). See RESEARCH.md, CAPABILITIES.md and PLAN.md. Implementation follows on
+  this branch.
