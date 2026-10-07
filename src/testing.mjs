@@ -30,8 +30,9 @@ export function createMockRuntime({profile = 'fixture', harness = 'dsh', script 
   const execute = async (name, args, {sessionId, callId}) => {
     if (!tools) throw new Error('The mock runtime has no application tools');
     const operationId = createHash('sha256').update(canonicalJSON([sessionId, callId, name])).digest('hex');
-    if (typeof tools.call === 'function') return tools.call(name, args, {sessionId, callId, operationId, principal: {id: 'owner', kind: 'owner'}});
-    return tools(name, args, {sessionId, callId, operationId});
+    // A plain function is an executor; anything else must be a toolkit (functions also have .call).
+    if (typeof tools === 'function') return tools(name, args, {sessionId, callId, operationId});
+    return tools.call(name, args, {sessionId, callId, operationId, principal: {id: 'owner', kind: 'owner'}});
   };
 
   function host() {

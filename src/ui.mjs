@@ -43,13 +43,16 @@ export const STANDARD_UI_ACTIONS = [
  * @param authorize  async (request) => principal ID (string) or true for the single owner; false to refuse
  * @param origin     exact application origin
  * @param actions    extra defineUiAction() declarations
+ * @param singleOwner  true: all admitted pages belong to the owner; false: route by principal ID
  */
-export function createUiBridge({authorize, origin, path = '/api/augmentor/ui', actions = [], timeoutMs = 15000, heartbeatMs = 25000, events} = {}) {
+export function createUiBridge({authorize, origin, path = '/api/augmentor/ui', actions = [], timeoutMs = 15000, heartbeatMs = 25000, events, singleOwner = true} = {}) {
   check(typeof authorize === 'function' && new URL(origin).origin === origin, 'INVALID_REQUEST', 'authorize and an exact origin are required');
   const declared = new Map([...STANDARD_UI_ACTIONS, ...actions].map(a => [a.name, {...a, validate: compileSchema(a.input, 'UI action ' + a.name)}]));
   const pages = new Map(), waiting = new Map();
   const base = path.replace(/\/$/, '');
-  const principalOf = value => value === true ? 'owner' : String(value);
+  // Single-owner apps: every page the owner check admits belongs to the one owner. Multi-user
+  // apps (singleOwner: false) route by the identity the check returns.
+  const principalOf = value => singleOwner || value === true ? 'owner' : String(value);
 
   function target(principal, pageId) {
     if (pageId) {const page = pages.get(pageId); return page?.principal === principal ? page : null;}
@@ -159,7 +162,7 @@ export function createUiBridge({authorize, origin, path = '/api/augmentor/ui', a
     return [...declared.values()].map(action => defineTool({name: `${prefix}_ui_${action.name.replace(/[.-]/g, '_')}`, title: `UI: ${action.name}`,
       description: `${action.description} (Acts on the user's open application window; fails with UI_UNAVAILABLE when it is closed.)`,
       input: action.input, effect: action.effect, timeoutMs: (action.timeoutMs ?? timeoutMs) + 1000,
-      handler: (args, ctx) => command(action.name, args, {principal: ctx.principal?.kind === 'owner' ? 'owner' : ctx.principal?.id ?? 'owner'})}));
+      handler: (args, ctx) => command(action.name, args, {principal: singleOwner || ctx.principal?.kind === 'owner' ? 'owner' : String(ctx.principal?.id)})}));
   }
 
   const endpoint = adapt(handle);

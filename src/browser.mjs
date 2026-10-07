@@ -1,31 +1,11 @@
 // Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
-// Hosting only. Augmentor serves and owns the complete maintained interface.
-import {snapshotContext} from './context.mjs';
-export function mountAugmentor({container, path = '/augmentor/', title = 'Augmentor', onStatus = () => {}, onNavigate = () => {}, onSettings = url => window.open(url, '_blank', 'noopener'), onHide = () => {}}) {
-  if (!(container instanceof Element)) throw Error('A container element is required');
-  const base = new URL(path, location.href);
-  if (base.origin !== location.origin || !/^\/[a-zA-Z0-9/_-]+\/$/.test(base.pathname) || base.search || base.hash) throw Error('Use the authenticated application proxy on the same origin');
-  const frame = document.createElement('iframe'); frame.src = new URL('sidepanel.html', base).href; frame.title = title;
-  frame.style.cssText = 'width:100%;height:100%;border:0'; container.append(frame);
-  let context = null, ready = false;
-  const sendContext = () => {if (ready && context) frame.contentWindow.postMessage({type:'augmentor-context', context}, base.origin);};
-  const listener = event => {
-    if (event.origin !== base.origin || event.source !== frame.contentWindow) return;
-    const value = event.data;
-    if (value?.type === 'augmentor-ready') {ready = true; sendContext();}
-    if (value?.type === 'augmentor-status') onStatus({online: value.online === true, busy: value.busy === true});
-    if (value?.type === 'augmentor-hide') onHide();
-    if (value?.type === 'augmentor-link' && typeof value.hash === 'string' && value.hash.startsWith('#') && value.hash.length <= 2000) onNavigate(value.hash);
-    if (value?.type === 'augmentor-settings') {
-      try {const u = new URL(value.url); if (u.origin === base.origin && u.pathname === base.pathname + 'settings.html') onSettings(u.href);} catch {}
-    }
-  };
-  window.addEventListener('message', listener);
-  return {
-    frame,
-    setContext(value) {
-      context = snapshotContext(value); sendContext();
-    },
-    destroy() {window.removeEventListener('message', listener); frame.remove(); ready = false;},
-  };
-}
+// Browser entry. Hosting only: Augmentor serves and owns the complete maintained panel.
+// For apps without a bundler, serve dist/augmentor-browser.mjs (one self-contained file).
+export {mountAugmentor} from './browser/panel.mjs';
+export {applyPanelTheme, themePreferences, hexToHue} from './browser/theme.mjs';
+export {connectPage, subscribe, showToast, showOverlay, highlight} from './browser/page.mjs';
+export {renderAgentUi, ensureStyles, lineDiff} from './browser/render.mjs';
+export {mountReviewQueue} from './browser/review.mjs';
+export {createAgent, bindPromptButtons} from './browser/agent.mjs';
+export {snapshotContext} from './context.mjs';
+export {UI_TYPES} from './ui-spec.mjs';
