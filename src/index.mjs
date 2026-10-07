@@ -25,6 +25,7 @@ export {AgentRunner, refuseInteractions} from './agent.mjs';
 export {createAutomation} from './automation.mjs';
 export {parseCron, nextRun, previousRun, inQuietHours, localDate} from './cron.mjs';
 export {createMcpServer, MCP_VERSIONS} from './mcp.mjs';
+export {PreferenceStore, preferenceTools} from './preferences.mjs';
 export {parameterSchema, compileSchema} from './schema.mjs';
 export {toDshParameters} from './dsh-schema.mjs';
 export {adapt, fromNode, fromFetch} from './http.mjs';

@@ -18,6 +18,7 @@ import {AgentRunner} from './agent.mjs';
 import {createAutomation} from './automation.mjs';
 import {createMcpServer} from './mcp.mjs';
 import {createProxy} from './proxy.mjs';
+import {PreferenceStore, preferenceTools} from './preferences.mjs';
 import {validateManifest} from './manifest.mjs';
 import {adapt, json, failure, errorResponse, readJson, sameOrigin, fromNode, fromFetch, send, toResponse} from './http.mjs';
 
@@ -68,7 +69,7 @@ function resourceRegistry(resources) {
  * descriptors for DSH/Codex, MCP listings, help text, UI and review routes) derives from it.
  */
 export function defineApp({id, name, description = '', harness = 'dsh', instructions = [], tools = [], prompts = [], modes = [], uiActions = [], resources = [],
-  grants = [], voice = false, ui = true, builtins = true, routes = {}}) {
+  grants = [], voice = false, ui = true, builtins = true, memory = false, routes = {}}) {
   check(/^[a-z][a-z0-9-]{0,63}$/.test(id || ''), 'INVALID_MANIFEST', 'App IDs are lower-case letters, digits and dashes');
   check(typeof name === 'string' && name.trim(), 'INVALID_MANIFEST', 'App name required');
   const prefix = id.replace(/-/g, '_');
@@ -79,7 +80,7 @@ export function defineApp({id, name, description = '', harness = 'dsh', instruct
   const registry = resourceRegistry(resources);
   const app = {
     kind: 'app', id, name, description, harness, prefix, instructions: [...instructions], tools: [...tools], prompts: library, resources: registry, uiActions: [...uiActions],
-    grants: grantNames, voice: !!voice, ui: !!ui, routes,
+    grants: grantNames, voice: !!voice, ui: !!ui, memory: !!memory, routes,
     /** Built-in tools: proposal status for follow-through, resource reading, and a generated reference. */
     builtinTools({proposals} = {}) {
       if (!builtins) return [];
@@ -95,9 +96,10 @@ export function defineApp({id, name, description = '', harness = 'dsh', instruct
       return extra;
     },
     /** Tool declarations including UI and built-in tools (no handlers executed). */
-    allTools({proposals, bridge} = {}) {
+    allTools({proposals, bridge, preferences} = {}) {
       const uiTools = ui ? (bridge || createUiBridge({origin: 'http://127.0.0.1:1', authorize: () => false, actions: uiActions})).tools({prefix}) : [];
-      return [...tools, ...uiTools, ...app.builtinTools({proposals: proposals ?? {get: () => null}})];
+      const memoryTools = memory ? preferenceTools(preferences || {list: () => [], feedback: () => [], set: () => null}, {prefix}) : [];
+      return [...tools, ...uiTools, ...memoryTools, ...app.builtinTools({proposals: proposals ?? {get: () => null}})];
     },
     /** Static descriptors for the in-runtime tool module (augmentor/tools.json). */
     descriptors() {
@@ -145,8 +147,9 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
   const activity = stores.activity || new ActivityLog(file('activity.sqlite'));
   const operations = stores.operations || new OperationStore(file('operations.sqlite'));
   const jobs = stores.jobs || new JobStore(file('jobs.sqlite'));
+  const preferences = app.memory ? stores.preferences || new PreferenceStore(file('preferences.sqlite')) : null;
   const bridge = app.ui ? createUiBridge({origin, authorize: authorizeOwner, path: basePath + '/ui', actions: app.uiActions, events, singleOwner: !authenticateRuntime}) : null;
-  const toolkit = createToolkit({tools: app.allTools({proposals, bridge}), proposals, activity, events, operations, services, policy, appName: app.name});
+  const toolkit = createToolkit({tools: app.allTools({proposals, bridge, preferences}), proposals, activity, events, operations, services, policy, appName: app.name});
   const runner = client ? new AgentRunner({client, events, activity, interactions}) : null;
   const automation = runner ? createAutomation({runner, jobs, events, prompts: app.prompts, activity}) : null;
   if (automation && configureAutomation) configureAutomation(automation, {app, toolkit, events});
@@ -156,6 +159,11 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
   const mcpServer = mcp ? createMcpServer({toolkit, prompts: app.prompts, resources: app.resources, name: app.id, title: app.name, tokenFile: mcp.tokenFile, authenticate: mcp.authenticate, instructions: app.description || undefined}) : null;
   const panel = proxy ? createProxy({profile: proxy.profile || app.id, origin, tokenFile: proxy.tokenFile, authorize: proxy.authorize || authorizeOwner, socketPath: proxy.socketPath, port: proxy.port, path: proxy.path || '/augmentor/'}) : null;
   const runs = new Map();
+  // Owner decisions become feedback the agent reads before its next draft.
+  if (preferences) events.subscribe('proposal.decided', event => {
+    const p = proposals.get(event.data.id); if (!p) return;
+    try {preferences.observe({tool: p.tool, decision: event.data.decision, note: p.note, subject: p.subject, args: p.args, finalArgs: p.finalArgs});} catch {}
+  });
 
   async function owner(request) {
     if (!sameOrigin(request, origin)) return null;
@@ -189,6 +197,16 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
         if (!automation) return failure(503, 'RUNTIME_UNAVAILABLE', 'No automation configured');
         path.endsWith('pause') ? automation.pause(`paused by ${who}`) : automation.resume(); return json(200, automation.status());
       }
+      if (preferences && path === '/preferences') {
+        if (request.method === 'GET') return json(200, {items: preferences.list(url.searchParams.get('scope') ? {scope: url.searchParams.get('scope')} : {}), feedback: preferences.feedback({limit: 50})});
+        if (request.method === 'POST') {
+          const body = await readJson(request, 16 * 1024);
+          if (body?.action === 'set') return json(200, preferences.set(body.scope, body.key, body.value, {source: 'owner'}));
+          if (body?.action === 'confirm') return json(200, preferences.confirm(body.scope, body.key));
+          if (body?.action === 'remove') return json(200, {removed: preferences.remove(body.scope, body.key)});
+          return failure(400, 'INVALID_REQUEST', 'action must be set, confirm or remove');
+        }
+      }
       if (request.method === 'GET' && path === '/reference') return {status: 200, headers: {'Content-Type': 'text/markdown; charset=utf-8'}, body: app.reference()};
       return failure(404, 'NOT_FOUND', 'Unknown Augmentor route');
     } catch (error) {return errorResponse(error);}
@@ -207,7 +225,7 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
   };
 
   const server = {
-    app, toolkit, events, proposals, activity, operations, jobs, runner, automation, bridge, mcp: mcpServer,
+    app, toolkit, events, proposals, activity, operations, jobs, preferences, runner, automation, bridge, mcp: mcpServer,
     /** Node handler. Resolves true when the request was handled; false lets the app route it. */
     async node(req, res) {
       const kind = route(new URL(req.url || '/', origin).pathname);
@@ -231,7 +249,7 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
       return {tool, review, ui: bridge, mcp: mcpServer, owner: ownerRoutes}[kind].fetch(request);
     },
     start() {automation?.start(); return server;},
-    close() {automation?.stop(); client?.close?.(); for (const s of [proposals, activity, operations, jobs]) {try {s.close();} catch {}}},
+    close() {automation?.stop(); client?.close?.(); for (const s of [proposals, activity, operations, jobs, preferences]) {try {s?.close();} catch {}}},
   };
   return server;
 }

@@ -137,3 +137,23 @@ test('automation triggers, MCP access and the security boundaries', async t => {
   assert.equal((await viaFetch.json()).items.length, 2);
   assert.equal(await h.server.fetch(new Request(h.origin + '/not-ours')), null);
 });
+
+test('memory: agent suggestions stay unconfirmed and owner decisions become feedback', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'sdk-memory-')); t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const tokenFile = join(dir, 't'); writeFileSync(tokenFile, 'synthetic-runtime-token-'.repeat(3));
+  const app = defineApp({id: 'notes', name: 'Notes', memory: true, tools: [defineTool({name: 'notes_send', description: 'Send a note to a contact', effect: 'external',
+    input: {type: 'object', properties: {to: {type: 'string'}, tone: {enum: ['warm', 'firm']}}, required: ['to', 'tone']}, handler: a => a})]});
+  assert.ok(app.descriptors().tools.some(t => t.name === 'notes_suggest_preference'));
+  const server = createAugmentorServer(app, {origin: 'http://127.0.0.1:9', authorizeOwner: () => true, runtimeTokenFile: tokenFile}); t.after(() => server.close());
+  const ctx = {sessionId: 's', operationId: 'op-1'};
+  server.preferences.set('app', 'reply.tone', 'warm', {source: 'owner'});
+  const ignored = await server.toolkit.call('notes_suggest_preference', {scope: 'app', key: 'reply.tone', value: 'firm', reason: 'guess'}, ctx);
+  assert.equal(ignored.ignored, true); assert.equal(server.preferences.get('app', 'reply.tone').value, 'warm');
+  const suggested = await server.toolkit.call('notes_suggest_preference', {scope: 'app', key: 'reply.length', value: 'short', reason: 'edits'}, {sessionId: 's', operationId: 'op-2'});
+  assert.equal(suggested.confirmed, false);
+  const receipt = await server.toolkit.call('notes_send', {to: 'a', tone: 'warm'}, {sessionId: 's', operationId: 'op-3'});
+  await server.toolkit.decide(receipt.proposalId, {decision: 'edit', args: {to: 'a', tone: 'firm'}, note: 'Be firmer with agencies'});
+  const read = await server.toolkit.call('notes_preferences', {tool: 'notes_send'}, {sessionId: 's'});
+  assert.deepEqual(read.feedback[0], {...read.feedback[0], tool: 'notes_send', decision: 'edit', note: 'Be firmer with agencies', changed: ['tone']});
+  assert.equal(read.preferences.length, 2);
+});
