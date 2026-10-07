@@ -1,11 +1,13 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
 # Embedded panel protocol v2 (product contract)
 
-**Status: specified by SDK 0.2.0-preview.1; implemented on the host side only.** The
-maintained panel (augmentor-agent `apps/browser/embed/entry.mjs`) does not yet advertise any
-v2 capability, so every feature below degrades to the v1 behaviour described in each section.
-Implementing it is a paired product change; it must not be emulated by scripting the panel's
-DOM or by a second agent loop in the page.
+**Status: implemented on the host side by SDK 0.2.0-preview.1; the product side exists as a
+paired change to augmentor-agent `9fa2317` (`apps/browser/embed/entry.mjs`,
+`apps/browser/extension/host-commands.mjs`, `sidepanel.js`, `docs/WORKSPACE-EMBEDDING.md`)
+that is not yet merged.** With that change, `npm run test:installed` passes against a real DSH
+web host (see HANDOFF.md). A released panel without it advertises no v2 capability, so every
+feature below degrades to the v1 behaviour described in each section. The panel side must not
+be emulated by scripting the panel's DOM or by a second agent loop in the page.
 
 ## Negotiation
 
@@ -24,7 +26,7 @@ payload is bounded (prompt text 16,000 characters; context 16 KB / 64 levels, th
 | Message | Capability | Fields | Panel behaviour |
 | --- | --- | --- | --- |
 | `augmentor-context` | v1 | `context` | Unchanged |
-| `augmentor-prompt` | `prompt` | `requestId`, `text`, `send`, `fresh`, `context?` | If `fresh`, start a new conversation in the workspace. Apply `context` as the selection for this prompt. If `send`, submit as the owner's message (`mode: 'queue'` when a turn is running); otherwise place the text in the composer for the owner to edit and send. Reply with `augmentor-result`. |
+| `augmentor-prompt` | `prompt` | `requestId`, `text`, `send`, `fresh`, `context?` | If `fresh`, start a new conversation in the workspace. Apply `context` as the selection for this prompt. If `send`, submit as the owner's message through the panel's normal send path; otherwise place the text in the composer for the owner to edit and send. An unsent owner draft is never replaced (`BUSY`); while a DSH turn runs the prompt is refused with `BUSY` (the maintained panel queues only for Codex); an open past conversation is refused (`REFUSED`) unless `fresh`. Reply with `augmentor-result`. |
 | `augmentor-new-chat` | `new-chat` | `requestId` | Open a new conversation; reply with `augmentor-result`. |
 | `augmentor-focus` | `focus` | — | Focus the composer. |
 
@@ -38,7 +40,7 @@ changes the workspace's tools, grants, preset or model.
 | `augmentor-ready` | v1 (+v2) | `profile`, `capabilities?` | Panel loaded |
 | `augmentor-status` | v1 / `status-session` | `online`, `busy`, `sessionId?` | Connection and turn state; with `status-session` it includes the open conversation ID |
 | `augmentor-result` | `prompt`, `new-chat` | `requestId`, `ok`, `result?`, `code?`, `error?` | Outcome of a host command (`code` e.g. `BUSY`, `REFUSED`) |
-| `augmentor-event` | `events` | `event`, `data` | `turn.started`, `turn.finished` `{reason}`, `tool.completed` `{tool}`, `session.changed` `{sessionId}` |
+| `augmentor-event` | `events` | `event`, `data` | `turn.started`, `turn.finished` `{reason}`, `tool.completed` `{tool, isError}`, `session.changed` `{sessionId}` (each also carries `sessionId`; no tool arguments or results) |
 | `augmentor-hide`, `augmentor-link`, `augmentor-settings` | v1 | as v1 | Unchanged |
 
 `augmentor-event` carries notifications only. Application data changes are still announced by

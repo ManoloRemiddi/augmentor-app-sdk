@@ -29,10 +29,27 @@ OpenAI-compatible fixture model drives seven requests: the model sees only grant
 nested required fields; a versioned write lands; an invalid enum is refused inside DSH before
 any HTTP call; a UI command reaches the page; an `external` tool becomes a pending proposal
 that executes exactly once after the owner approves over HTTP; an ungranted tool is refused by
-the product guard; the turn ends `completed`. CI still pins product `8a085be`; the other
-platforms were not run. Not done: the full desktop application with a real model and the
-embedded panel, any platform matrix, any live application change, the panel protocol v2
-product implementation, publication. Preview 4 evidence below remains tied to its commits.
+the product guard; the turn ends `completed`.
+
+`npm run test:installed -- <built product> <python with websocket-client>` is the installed
+runtime proof (Linux). It boots the product's pinned DSH 0.1.5-rc.1 as a real `dsh --profile
+web` host in an isolated home, installs the Augmentor integration with the product's own
+`services/dsh/setup.py` (check, install, restart, check, save), registers the application with
+`augmentor-app register` through a runtime descriptor, serves the maintained panel through the
+product's embedding service and native host behind the SDK proxy, and opens an SDK host page in
+Chromium. With the paired product change for panel protocol v2 (augmentor-agent `9fa2317` plus
+`apps/browser/embed/entry.mjs`, `extension/host-commands.mjs`, `extension/sidepanel.js`; not
+merged), it passes: the panel advertises the v2 capabilities; a prefill lands in the owner's
+composer and an owner draft is never replaced; `agent.ask('triage')` delivers the premade
+prompt into the panel conversation; the DSH turn calls the app's tools (list, versioned update,
+UI open on the page, external reply as a proposal) and ends `completed`, reported to the page
+as panel events; the owner's approval executes the reply exactly once; `newChat()` works; and a
+background premade prompt runs through the server's AgentRunner, the SDK client and the
+product native host to `completed`. Against the unmodified product panel the same proof fails
+at the capability check, as expected. The model is a deterministic OpenAI-compatible fixture.
+CI still pins product `8a085be`; the other platforms were not run. Not done: a real model, the
+packaged desktop application and its tray/home services, macOS/Windows, merging the product
+change, any live application change, publication. Preview 4 evidence below remains tied to its commits.
 
 ## Preview 4 source candidate — October 3, 2026
 

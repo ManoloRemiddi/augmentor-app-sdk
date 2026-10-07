@@ -77,7 +77,10 @@ Source checks (no runtime): `npm test`, `npm run test:package`, `npm run check:t
 `augmentor-app check augmentor/app.mjs`. Runtime proofs (synthetic, no deployment):
 `npm run test:runtime -- <built product>` and
 `npm run test:agent-loop -- <product>/release/dsh/node_modules/@deepseek-ai/dsh <product>`
-(the real DSH agent loop on a product-installed workspace preset; see HANDOFF.md). Run the SDK's DSH schema test against the installed
+(the real DSH agent loop on a product-installed workspace preset), and
+`npm run test:installed -- <built product> <python with websocket-client>` (a real DSH web
+host with the product integration installed, the maintained panel in Chromium; panel v2 needs
+the paired product change; see HANDOFF.md). Run the SDK's DSH schema test against the installed
 runtime's compiler with `AUGMENTOR_DSH_TOOLS_SCHEMA=/path/to/dsh-tools/lib/types/schema.js npm test`.
 
 Live checks to add to the delivery record: every tool loads in the real runtime after

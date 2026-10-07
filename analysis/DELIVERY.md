@@ -50,6 +50,7 @@ on upgrade; F2 machine paths in a shipped document.
 | `scripts/proof-dsh.mjs` against the real DSH 0.1.5-rc.1 tool runtime | pass |
 | `npm run test:runtime` against built product `main` `9fa2317` | 27/27 |
 | `npm run test:agent-loop` — real pinned DSH agent loop, product installer + preset roster + workspace guard, SDK server and page, fixture model | pass (7 model requests, 19 assertions) |
+| `npm run test:installed` — real `dsh --profile web` host, product installer, `augmentor-app register`, product embedding service + native host, maintained panel in Chromium, SDK host page, fixture model | pass with the paired panel v2 product change; fails at the capability check without it (expected) |
 | `npm audit` | 0 vulnerabilities |
 
 What `test:agent-loop` proves end to end: the product's `installProfile` writes the workspace
@@ -61,11 +62,24 @@ exactly once after the owner approves, an ungranted tool is refused by the produ
 the turn ends `completed`. The model is a deterministic fixture: this proves the wiring, not
 model quality.
 
-Not done: the full desktop application with a real model and the embedded panel,
-macOS/Windows runs, the panel protocol v2 product implementation (specified in
-PANEL-PROTOCOL.md; it is product work in the Augmentor repository, which this branch does not
-change; until then the SDK uses the T1 paths, which work today), any live-app migration,
-publication.
+What `test:installed` proves on top: Augmentor installed into a real DSH web host by the
+product's own setup code; the application registered with the SDK CLI; the maintained panel
+running in Chromium inside the application's page; the page sending a premade prompt into the
+panel conversation, the agent operating the application (data, UI, a gated external action)
+and the panel reporting the turn back to the page; the owner approving in the application; and
+a background premade prompt completing through the SDK client and the product native host.
+
+Panel protocol v2 product side: implemented as a paired change to augmentor-agent `9fa2317`
+(embedded entry, a small `host-commands.mjs` used by the side panel, a unit test and the
+embedding document; about 80 lines). It is delivered as a patch file outside this repository,
+since this branch does not change the product repository. It needs review and merging in the
+product before released panels advertise v2; until then the SDK uses the T1 paths, which work
+today.
+
+Not done: a real model (no credentials were used), the packaged desktop application with its
+tray and home services, macOS/Windows runs, the product's jsdom panel suites (their test
+dependencies were not installed here; the root workspace suites and the new unit test pass),
+any live-app migration, publication.
 
 ## Decisions for you
 
@@ -77,8 +91,8 @@ publication.
 3. Q7: confirm "agent drafts, owner commits" as the default recommendation.
 4. Q9: when to move Sponsor desk and the YouTube workspace off preview 2 (start with the
    single-file bundle; see APP-UPGRADES.md).
-5. Whether to publish 0.2.0-preview.1 as a release after an installed-runtime check, and
-   whether to open the product PR for panel protocol v2 and the E1/E12/E13 fixes.
+5. Whether to publish 0.2.0-preview.1 as a release, and whether to open the product PR for
+   panel protocol v2 (patch ready, proven by `test:installed`) and the E1/E12/E13 fixes.
 
 ## Notes
 

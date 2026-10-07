@@ -74,7 +74,9 @@ npm pack
 
 0.2 adds optional checks: `npm run test:browser` and `npm run test:example` (Chromium via
 Playwright), `npm run check:types` (TypeScript), `npm run test:agent-loop -- <DSH install> <product
-checkout>` (the real DSH agent loop on a product-installed workspace preset), and `npm run build` to regenerate the
+checkout>` (the real DSH agent loop on a product-installed workspace preset),
+`npm run test:installed -- <built product> <python>` (real DSH web host, product installer,
+maintained panel in Chromium), and `npm run build` to regenerate the
 single-file browser bundle. Use a source-built archive only for development. The published
 preview 3 archive and existing live apps remain unchanged. Installing a newer SDK alone
 does not add product adapters to an older Augmentor installation.
