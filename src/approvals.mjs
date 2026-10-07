@@ -33,11 +33,11 @@ export class ProposalStore {
     check(isId(operationId), 'INVALID_ID', 'Proposal requires a stable operation ID');
     const digest = createHash('sha256').update(canonicalJSON([tool, args])).digest('hex');
     const existing = this.byOperation(operationId);
-    if (existing) {check(this.db.prepare('SELECT digest FROM proposals WHERE id=?').get(existing.id).digest === digest, 'OPERATION_CONFLICT', 'Operation ID already belongs to a different proposal'); return existing;}
+    if (existing) {check(this.db.prepare('SELECT digest FROM proposals WHERE id=?').get(existing.id).digest === digest, 'OPERATION_CONFLICT', 'Operation ID already belongs to a different proposal'); return {...existing, fresh: false};}
     const id = randomUUID(), now = this.now();
     this.db.prepare('INSERT INTO proposals(id,operation_id,tool,args,digest,session,summary,preview,risk,subject,state,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)')
       .run(id, operationId, tool, JSON.stringify(args ?? {}), digest, session ?? null, String(summary).slice(0, 2000), toJson(preview), risk, subject ?? null, 'pending', now, now + ttlMs);
-    return this.get(id);
+    return {...this.get(id), fresh: true};
   }
   list({state, session, tool, subject, ...rest} = {}) {
     this.expire();
