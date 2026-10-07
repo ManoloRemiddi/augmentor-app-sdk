@@ -34,7 +34,8 @@ OS permission or memory engine.
    the protocol when required semantics are incompatible. Never rewrite a
    published version or tag.
 3. Build the product and run `npm run check`, `npm test`, `npm run test:package`
-   and `npm run test:runtime -- /absolute/path/to/paired-product` in the SDK.
+   and `npm run test:runtime -- /absolute/path/to/paired-product` in the SDK, plus
+   `npm run test:agent-loop -- <product>/release/dsh/node_modules/@deepseek-ai/dsh <product>`.
    Use isolated synthetic state. The packed consumer is a fixture, not the
    owner's independent third application.
 4. Pin the product SHA in `.github/workflows/validate.yml` to the reviewed

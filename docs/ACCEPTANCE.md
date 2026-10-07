@@ -74,7 +74,10 @@ behavior rather than inferring identical queue semantics.
 
 Source checks (no runtime): `npm test`, `npm run test:package`, `npm run check:types`,
 `npm run test:browser`, `npm run test:example`, and for the app's definition
-`augmentor-app check augmentor/app.mjs`. Run the SDK's DSH schema test against the installed
+`augmentor-app check augmentor/app.mjs`. Runtime proofs (synthetic, no deployment):
+`npm run test:runtime -- <built product>` and
+`npm run test:agent-loop -- <product>/release/dsh/node_modules/@deepseek-ai/dsh <product>`
+(the real DSH agent loop on a product-installed workspace preset; see HANDOFF.md). Run the SDK's DSH schema test against the installed
 runtime's compiler with `AUGMENTOR_DSH_TOOLS_SCHEMA=/path/to/dsh-tools/lib/types/schema.js npm test`.
 
 Live checks to add to the delivery record: every tool loads in the real runtime after

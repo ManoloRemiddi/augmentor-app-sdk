@@ -49,10 +49,23 @@ on upgrade; F2 machine paths in a shipped document.
 | `npm run test:example` (Chromium, mock model) | pass |
 | `scripts/proof-dsh.mjs` against the real DSH 0.1.5-rc.1 tool runtime | pass |
 | `npm run test:runtime` against built product `main` `9fa2317` | 27/27 |
+| `npm run test:agent-loop` — real pinned DSH agent loop, product installer + preset roster + workspace guard, SDK server and page, fixture model | pass (7 model requests, 19 assertions) |
 | `npm audit` | 0 vulnerabilities |
 
-Not done: qualification against an installed Augmentor runtime, macOS/Windows runs, the
-panel protocol v2 product implementation, any live-app migration, publication.
+What `test:agent-loop` proves end to end: the product's `installProfile` writes the workspace
+preset, DSH's preset roster mounts it (role in the system prompt, SDK tool module, product
+policy guard), the model is offered only granted tools with nested required fields, a
+versioned write lands in the app, an invalid enum is refused inside DSH before any HTTP call,
+the agent's UI command reaches the open page, an `external` tool becomes a proposal that runs
+exactly once after the owner approves, an ungranted tool is refused by the product guard, and
+the turn ends `completed`. The model is a deterministic fixture: this proves the wiring, not
+model quality.
+
+Not done: the full desktop application with a real model and the embedded panel,
+macOS/Windows runs, the panel protocol v2 product implementation (specified in
+PANEL-PROTOCOL.md; it is product work in the Augmentor repository, which this branch does not
+change; until then the SDK uses the T1 paths, which work today), any live-app migration,
+publication.
 
 ## Decisions for you
 

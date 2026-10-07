@@ -20,8 +20,18 @@ starter's constrained tool and nested required fields register and validate, whe
 preview 4 source failed silently with `unknown tool`. The paired product proof
 (`npm run test:runtime`) passes 27/27 against a built copy of product `main` `9fa2317` with the
 packed 0.2 SDK (Linux), confirming the 0.1 client and tool modules the product imports remain
-compatible. CI still pins product `8a085be`; the other platforms were not run. Not done: paired product proof against an
-installed runtime, any platform matrix, any live application change, the panel protocol v2
+compatible. `npm run test:agent-loop -- <DSH install> <product checkout>` runs the real
+pinned DSH agent loop (agent, loop, pi-ai provider, tools, system prompt, JSONL sessions,
+preset roster and Loader from the product's `release/dsh`) on a workspace preset written by the
+product's own `installProfile`, with the product's workspace policy guard and the SDK-generated
+tool module, against a live SDK application server and a connected page. A deterministic
+OpenAI-compatible fixture model drives seven requests: the model sees only granted tools with
+nested required fields; a versioned write lands; an invalid enum is refused inside DSH before
+any HTTP call; a UI command reaches the page; an `external` tool becomes a pending proposal
+that executes exactly once after the owner approves over HTTP; an ungranted tool is refused by
+the product guard; the turn ends `completed`. CI still pins product `8a085be`; the other
+platforms were not run. Not done: the full desktop application with a real model and the
+embedded panel, any platform matrix, any live application change, the panel protocol v2
 product implementation, publication. Preview 4 evidence below remains tied to its commits.
 
 ## Preview 4 source candidate — October 3, 2026

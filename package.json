@@ -57,6 +57,7 @@
     "test:browser": "node scripts/proof-browser.mjs",
     "test:runtime": "node scripts/proof-runtime.mjs",
     "test:example": "node scripts/proof-example.mjs",
+    "test:agent-loop": "node scripts/proof-agent-loop.mjs",
     "check:types": "node scripts/check-types.mjs"
   },
   "dependencies": {
