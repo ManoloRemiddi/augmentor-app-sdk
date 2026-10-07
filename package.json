@@ -1,17 +1,37 @@
 {
   "name": "@augmentor/app-sdk",
-  "version": "0.1.0-preview.4",
-  "description": "Connect trusted applications to the maintained Augmentor agent through scoped harness adapters",
+  "version": "0.2.0-preview.1",
+  "description": "Make applications agent-native with the maintained Augmentor agent: tools, approvals, UI control, prompts, automation and the embedded panel",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": ">=24.14.0"
   },
   "exports": {
-    ".": "./src/index.mjs",
-    "./browser": "./src/browser.mjs",
-    "./dsh": "./src/dsh.mjs",
-    "./tools": "./src/tools.mjs",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./browser": {
+      "types": "./types/browser.d.ts",
+      "default": "./src/browser.mjs"
+    },
+    "./browser.bundle": {
+      "types": "./types/browser.d.ts",
+      "default": "./dist/augmentor-browser.mjs"
+    },
+    "./dsh": {
+      "types": "./types/dsh.d.ts",
+      "default": "./src/dsh.mjs"
+    },
+    "./tools": {
+      "types": "./types/tools.d.ts",
+      "default": "./src/tools.mjs"
+    },
+    "./testing": {
+      "types": "./types/testing.d.ts",
+      "default": "./src/testing.mjs"
+    },
     "./manifest.schema.json": "./schema/manifest.schema.json"
   },
   "bin": {
@@ -23,14 +43,18 @@
     "schema",
     "templates",
     "docs",
+    "dist",
+    "types",
     "AGENTS.md",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "node scripts/build-browser.mjs",
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
     "test:package": "node --test test/package/consumer.test.mjs",
+    "test:browser": "node scripts/proof-browser.mjs",
     "test:runtime": "node scripts/proof-runtime.mjs"
   },
   "dependencies": {
