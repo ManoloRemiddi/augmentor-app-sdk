@@ -38,5 +38,15 @@ export class JobStore {
     check(previousStopped===true,'RECONCILIATION_REQUIRED','Confirm the previous execution stopped before retrying');
     check(this.db.prepare("UPDATE jobs SET state='queued',attempt=NULL,session=NULL,lease_until=0,result=NULL WHERE id=? AND state IN ('interrupted','failed','partial','cancelled')").run(id).changes===1,'JOB_CONFLICT','Job cannot be retried');return this.get(id);
   }
+  /** Find a job by its stable key (for catch-up and deduplication). */
+  find(key){const r=this.db.prepare('SELECT id FROM jobs WHERE job_key=?').get(key);return r?this.get(r.id):null;}
+  /** List jobs, newest first, optionally by state and key prefix (e.g. after a restart). */
+  list({state,keyPrefix,limit=50,offset=0}={}){
+    const where=[],values=[];
+    if(state){const states=Array.isArray(state)?state:[state];where.push(`state IN (${states.map(()=>'?').join(',')})`);values.push(...states);}
+    if(keyPrefix){where.push('job_key LIKE ? ESCAPE ?');values.push(keyPrefix.replace(/[\\%_]/g,c=>'\\'+c)+'%','\\');}
+    const lim=Math.max(1,Math.min(500,Number(limit)||50)),off=Math.max(0,Number(offset)||0);
+    return this.db.prepare(`SELECT id FROM jobs ${where.length?'WHERE '+where.join(' AND '):''} ORDER BY rowid DESC LIMIT ? OFFSET ?`).all(...values,lim,off).map(r=>this.get(r.id));
+  }
   close(){this.db.close();}
 }

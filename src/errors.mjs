@@ -9,8 +9,10 @@ export function check(condition, code, message, details) {
 }
 export const SDK_PROTOCOL = 'augmentor-app/1';
 export const isId = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,160}$/.test(value);
+// Same value space as JSON.stringify: undefined/function members are omitted (null in arrays).
+const skip = v => v === undefined || typeof v === 'function' || typeof v === 'symbol';
 export function canonicalJSON(value) {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return '[' + value.map(canonicalJSON).join(',') + ']';
-  return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonicalJSON(value[key])).join(',') + '}';
+  if (value === null || typeof value !== 'object') return skip(value) ? 'null' : JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(item => skip(item) ? 'null' : canonicalJSON(item)).join(',') + ']';
+  return '{' + Object.keys(value).filter(key => !skip(value[key])).sort().map(key => JSON.stringify(key) + ':' + canonicalJSON(value[key])).join(',') + '}';
 }
