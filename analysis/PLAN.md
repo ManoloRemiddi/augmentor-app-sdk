@@ -134,3 +134,5 @@ the live apps.
 ## Log
 
 - 2026-10-07: plan written after six research/analysis streams.
+- 2026-10-08: phases 1–6 implemented on this branch (see FINDINGS log for fixed IDs). Product
+  work in §7 and the hosted multi-user design remain open.

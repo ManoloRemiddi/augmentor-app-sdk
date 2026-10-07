@@ -69,3 +69,18 @@ queue/steering/restart snapshots, changed-context conflicts and parent-scoped
 branch recovery. The reported `application-context.binding` distinguishes
 Codex operation snapshots from DSH latest-session selection; record that
 behavior rather than inferring identical queue semantics.
+
+## 0.2 acceptance additions
+
+Source checks (no runtime): `npm test`, `npm run test:package`, `npm run check:types`,
+`npm run test:browser`, `npm run test:example`, and for the app's definition
+`augmentor-app check augmentor/app.mjs`. Run the SDK's DSH schema test against the installed
+runtime's compiler with `AUGMENTOR_DSH_TOOLS_SCHEMA=/path/to/dsh-tools/lib/types/schema.js npm test`.
+
+Live checks to add to the delivery record: every tool loads in the real runtime after
+`register` and a restart; an approval-gated tool creates a proposal visible in the review
+queue, and approving it executes exactly once; the agent's UI commands reach the open page
+and fail cleanly when it is closed; the change feed refreshes the page after an agent write;
+one premade prompt runs in the background and its result is retrievable; one automation rule
+runs once per key and the pause switch stops new jobs. Mock-runtime and fixture results are
+not live evidence.

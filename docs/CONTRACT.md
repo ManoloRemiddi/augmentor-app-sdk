@@ -61,3 +61,49 @@ not an implicit migration or authorization to resubmit. DSH keeps its existing
 latest-session selection and ten-minute expiry. Applications needing a precise
 queued target must preserve that target in their request/backend operation and
 resolve it through tools. Neither harness lets context change workspace authority.
+
+## 0.2 source extension (0.2.0-preview.1)
+
+The runtime protocol is still `augmentor-app/1`; 0.2 adds application-side contracts.
+
+**Tool declarations.** One `defineApp()` declaration generates the manifest names and
+`tools.json` (schema version 1: `{app, fingerprint, tools: [{name, description, inputSchema, outputSchema?, effect, approval}]}`).
+The runtime module registers DSH tools from it, compiling JSON Schema 2020-12 to DSH's
+descriptor DSL; constraints the DSL cannot express are enforced by the SDK before the
+application handler runs. The fingerprint changes whenever anything the model reads
+changes; `augmentor-app check` reports drift.
+
+**Effects and approval.** `read` and `draft` never need approval by default; `write` follows
+the application's policy; `external` and `destructive` require approval unless the app
+explicitly overrides. An approval-gated call never runs: it creates a durable proposal
+(idempotent per operation ID) and returns `approval_required`. Only an owner decision
+recorded through the application's authenticated review route can approve; execution
+happens once on the server, with the owner-approved (possibly edited and re-validated)
+arguments and the original operation ID. Decisions are `approved → executing → executed |
+failed`, `rejected`, `expired` or `withdrawn`. A browser click without that server record
+authorises nothing.
+
+**UI bridge.** UI tools act only on pages the owner check admits, routed to the owner's
+focused page (or by principal when `singleOwner: false`). They cannot write application data
+(`read` or `draft` effects only); `fill` never submits. No page open → `UI_UNAVAILABLE`.
+
+**Change feed.** Events are notifications `{id, seq, type, time, source, subject?, actor?, data}`
+(≤ 64 KiB), never commands. Pages replay missed events with `Last-Event-ID` from a bounded
+history. Records stay authoritative in the application.
+
+**Agent runs.** `AgentRunner` awaits a turn by matching `user/message.source.rpcId` to its
+operation ID and the following `turn/end`, falling back to the `session.history` header when
+events stop. Interactions are settled by an explicit policy (default: refuse); a timeout or
+abort cancels the session. Automation jobs keep the `JobStore` states; a job key identifies
+each event or scheduled occurrence, and interrupted jobs are never retried without
+reconciliation.
+
+**Preferences.** Owner-set preferences are confirmed; agent suggestions are unconfirmed and
+cannot override confirmed ones. Owner decisions are recorded as feedback with the changed
+field names, not values.
+
+**MCP.** The optional MCP endpoint exposes the same toolkit with the same approval,
+validation and audit, behind its own bearer token, refusing browser origins.
+
+**Panel protocol v2** is specified in [PANEL-PROTOCOL.md](PANEL-PROTOCOL.md) and negotiated
+by capability; absent capabilities keep v1 behaviour.

@@ -12,3 +12,23 @@ The same-origin embed is part of the trusted application surface. Host-applicati
 Before widening availability: audit dependencies and package contents; exercise real runtime upgrade/rollback; run cross-workspace denial and interrupted action tests; verify each promised OS/deployment topology; review permissions shown to the owner; implement lifecycle-aware credential revocation; define coordinated retention/deletion; qualify concurrency/resource limits. Cloud voice and third-party model services require explicit provider credentials, cost and data-flow decisions.
 
 The user will perform the independent third-application adoption test without this agent's participation. Existing-app migrations and synthetic fixtures must not be described as that test.
+
+## 0.2 additions
+
+New enforced boundaries (application side): approval-gated tools never execute without an
+owner decision recorded by the server; edited arguments are re-validated; proposal and
+operation receipts make execution at-most-once per operation ID; the tool endpoint refuses
+browser requests (any `Origin` or cross-site fetch metadata) and requires the runtime
+credential (constant-time comparison, re-read on every request); owner routes require the
+application's own owner check plus same-origin requests; the UI bridge cannot write data and
+routes only to admitted pages; generative UI is rendered from a fixed catalogue with DOM text
+APIs and link allow-lists, never HTML; results marked `untrustedOutput` are wrapped with an
+explicit data-not-instructions note; tool definitions are fingerprinted so changes are
+visible; agent preference suggestions cannot override confirmed owner preferences; the MCP
+endpoint has its own credential and refuses browser origins; automation has a pause switch,
+budgets and quiet hours.
+
+Not claimed: approval UI inside the maintained panel (specified, not implemented); hosted
+multi-user pairing; defence against a malicious owner-installed tool module or handler; that
+`untrustedOutput` marking prevents prompt injection (it reduces it; keep irreversible actions
+approval-gated or out of the tool set); semantic correctness of agent output.

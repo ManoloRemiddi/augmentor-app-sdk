@@ -65,3 +65,15 @@ silently change credentials/models, or switch an existing workspace's harness.
 Keep the recorded YouTube/Sponsor desk deployment and rollback evidence until
 their separately qualified migration. Leave the owner's independent third-app
 test independent. Preserve the existing license and resale-agreement terms.
+
+## 0.2 maintenance
+
+- Regenerate the browser bundle with `npm run build` after changing `src/browser*`,
+  `src/context.mjs`, `src/errors.mjs` or `src/ui-spec.mjs`; `npm run check` fails on a stale bundle.
+- Keep `types/*.d.ts` in step with exports; `npm run check:types` compiles them strictly.
+- When DSH's descriptor DSL changes, update `src/dsh-schema.mjs` and run the schema test
+  against the new compiler (`AUGMENTOR_DSH_TOOLS_SCHEMA`).
+- When the product implements panel protocol v2, pair it with the host-side tests in
+  `scripts/proof-browser.mjs` against the real panel.
+- Session event shapes used by `AgentRunner` (`user/message.source.rpcId`, `turn/end.reason.kind`,
+  `assistant/message.message.content`) are product contract: re-check them on product updates.

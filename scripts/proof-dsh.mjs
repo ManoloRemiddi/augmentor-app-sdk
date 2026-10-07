@@ -15,8 +15,15 @@ try{
  // Match Augmentor: its existing preset selects native presentation first.
  await scoped.ctx.plugin({inject:['tools'],apply:ctx=>ctx.tools.presentAs('native')}).await();
  await scoped.ctx.plugin({inject:['tools'],apply:ctx=>registerDshTools(ctx,{defineTool,definitions:[['sdk_test','Synthetic schema proof',{names:{type:'array',items:{type:'string'},required:true}}]],execute:async(_name,args)=>{calls++;return {count:args.names.length};}})}).await();
+ // B8/B1: the starter template's constraints and nested required fields must load in real DSH.
+ await scoped.ctx.plugin({inject:['tools'],apply:ctx=>registerDshTools(ctx,{defineTool,definitions:[
+   ['sdk_template','Template-style constraints',{id:{type:'string',required:true,minLength:1,maxLength:160}}],
+   ['sdk_nested','Nested required',{type:'object',properties:{cards:{type:'array',items:{type:'object',properties:{front:{type:'string'},back:{type:'string'}},required:['front','back']}},cmd:{oneOf:[{type:'object',properties:{kind:{const:'a'}},required:['kind']},{type:'object',properties:{kind:{const:'b'},n:{type:'integer'}},required:['kind','n']}]}},required:['cards']}]],
+   execute:async()=>({ok:true})})}).await();
+ const nested=await ctx.tools.execute({name:'sdk_nested',arguments:{cards:[{front:'f'}]},agent,callId:'n',signal:new AbortController().signal});
+ assert.equal(nested.isError,true);
  const a=await ctx.tools.execute({name:'sdk_test',arguments:{names:['a','b']},agent,callId:'a',signal:new AbortController().signal});
  const b=await ctx.tools.execute({name:'sdk_test',arguments:{names:[42]},agent,callId:'b',signal:new AbortController().signal});
  assert.equal(a.isError,false);assert.equal(b.isError,true);assert.equal(calls,1);
- console.log(JSON.stringify({realDshToolRegistration:true,existingPresetPresentationPreserved:true,validArrayAccepted:true,invalidArrayNeverExecuted:true}));
+ console.log(JSON.stringify({realDshToolRegistration:true,templateConstraintsLoad:true,nestedRequiredEnforced:true,existingPresetPresentationPreserved:true,validArrayAccepted:true,invalidArrayNeverExecuted:true}));
 }finally{await ctx.fiber.dispose();}

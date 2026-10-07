@@ -1,6 +1,26 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## 0.2.0-preview.1 source — October 7, 2026
+
+Branch `claude/admiring-dijkstra-sq4i9a` turns the SDK into an agent-native application kit
+(see [GUIDE.md](GUIDE.md), [MIGRATION-0.2.md](MIGRATION-0.2.md) and the repository's
+`analysis/` folder for findings, research, capability catalogue and plan). It also fixes
+B1 (nested required), B2–B7 and B8: the starter tool was rejected by the real DSH
+descriptor compiler; parameters are now compiled to that DSL.
+
+Evidence on this branch (synthetic, Node 24.19.0, Linux): `npm test` (unit and integration
+with a mock runtime that speaks the native frame protocol), `npm run test:package` (clean
+consumer installs the tarball, runs the minimal starter fixture and the app kit end to end),
+`npm run check:types`, `npm run test:browser` and `npm run test:example` (Chromium via
+Playwright against a synthetic stand-in panel), the DSH descriptor tests against the real
+dsh-tools 0.1.5-rc.1 schema compiler, and `scripts/proof-dsh.mjs` against the real DSH tool
+runtime (dsh-tools/system-prompt/scope 0.1.5-rc.1, cordis 4.0.2 installed from npm): the
+starter's constrained tool and nested required fields register and validate, where the
+preview 4 source failed silently with `unknown tool`. Not done: paired product proof against an
+installed runtime, any platform matrix, any live application change, the panel protocol v2
+product implementation, publication. Preview 4 evidence below remains tied to its commits.
+
 ## Preview 4 source candidate — October 3, 2026
 
 The owner-authorized source update is integrated on main through

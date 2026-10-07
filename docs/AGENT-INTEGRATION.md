@@ -15,6 +15,7 @@ Choose a stable app/profile ID; do not reuse `my-app` across installations.
 Read, in order:
 
 1. [Runtime alignment](RUNTIME-ALIGNMENT.md) for preview 4 source, then [Quick start](QUICKSTART.md): the complete install and wiring sequence.
+   For the 0.2 source on this branch, read [GUIDE.md](GUIDE.md) and [MIGRATION-0.2.md](MIGRATION-0.2.md) next.
 2. [Contract](CONTRACT.md) and [security](SECURITY.md): authority, recovery and trust.
 3. [API](API.md): exact exports, method signatures, defaults and ownership.
 4. [Acceptance](ACCEPTANCE.md): what must be demonstrated before saying it works.
@@ -109,6 +110,13 @@ Provide this prompt together with the actual target app and deployment scope:
 > evidence separately. Preserve existing data, histories, jobs and configuration.
 > Ask for facts you cannot establish; do not invent credentials or claim fixture
 > results prove a live integration. Follow my stated deployment authorization.
+
+For the 0.2 source (unpublished), add:
+
+> Use the 0.2 agent-native kit: `augmentor-app init --template app`, declare tools with
+> effects in `augmentor/app.mjs`, keep irreversible actions approval-gated or out of the tool
+> set, wire `createAugmentorServer` and `connectPage`, and run `augmentor-app check`. Treat
+> mock-runtime and fixture results as wiring evidence only.
 
 That prompt targets the published DSH/Linux baseline. For an explicitly authorized
 preview 4 Codex development integration, also supply this instruction:

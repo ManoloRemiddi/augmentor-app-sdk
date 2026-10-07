@@ -291,7 +291,10 @@ Reported by analysis agent:
   refuses with "parameters.id.minLength is not supported by the value schema DSL". The
   SDK's tests use a fake `defineTool`, which hid it.
 - **Impact:** an integrator following the template gets a tool plugin that fails to
-  load in the real runtime.
+  load in the real runtime — silently. Reproduced in the real DSH tool runtime (dsh-tools
+  0.1.5-rc.1, cordis 4.0.2, installed from npm): with the preview 4 source the plugin's
+  `apply` throws, the composition still completes, and the tool is reported as `unknown
+  tool`; with the 0.2 compiler the same declaration registers and executes.
 - **Candidate solution:** compile JSON Schema to the DSH descriptor DSL (constraints the
   DSL cannot express are enforced by the SDK's AJV validation and described in text),
   and test against the real compiler.
@@ -828,3 +831,10 @@ Further material from the owner will be analysed and added here.
   real DSH compiler), E12, E13 and theme L (tutoring app, analysed at the owner's
   request). See RESEARCH.md, CAPABILITIES.md and PLAN.md. Implementation follows on
   this branch.
+- **2026-10-08** — Implemented SDK 0.2.0-preview.1 on this branch. Fixed: B1, B2, B3, B4, B5,
+  B7 (partly: argv fallback, streaming timeout, JobStore list/find), B8 (confirmed in the
+  real DSH tool runtime), D1, D3, D4, D5, F1 (single-file bundle), F2, F6/F12 (`check`),
+  F11 (`GRANTS`), G1 (fetch handlers), G2 (`bundle --verify`), G3 (testing kit), K1, K2,
+  C2–C5, C9, C10 (host side), E11 (public APIs replace product internals). Specified for the
+  product: C1/C7/C8 panel side (PANEL-PROTOCOL.md). Open: A1, A2 recipe, B6 (documented
+  only), E1–E10, E12, E13, F3–F5, F7–F10, F13, H1, H2, theme L design items.
