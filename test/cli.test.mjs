@@ -16,7 +16,7 @@ function fixture(t){
 }
 test('help describes limits and reports bad arguments without writing state',t=>{
   const {root,run}=fixture(t);assert.match(run('--help').stdout,/not running services/);
-  assert.match(run('--version').stdout,/^0\.1\.0-preview\.\d+\n$/);
+  assert.equal(run('--version').stdout,JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).version+'\n');
   assert.equal(run('init','.','--bogus','x').status,1);assert.deepEqual(readdirSync(root),[]);
 });
 test('init creates coherent files for a maximum-length ID, avoids extra grants and leaves private state absent',t=>{
