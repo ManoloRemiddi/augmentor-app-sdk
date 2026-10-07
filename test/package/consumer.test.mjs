@@ -23,7 +23,8 @@ test('shipped archive installs in a clean consumer and its generated adapter pas
   };
   const [packed]=JSON.parse(run('npm',['pack','--ignore-scripts','--json','--pack-destination',root],repository));
   const names=packed.files.map(file=>file.path);
-  for(const name of ['AGENTS.md','docs/AGENT-INTEGRATION.md','docs/API.md','docs/ACCEPTANCE.md','templates/integration/server.mjs','src/scaffold.mjs'])assert.ok(names.includes(name),name);
+  for(const name of ['AGENTS.md','docs/AGENT-INTEGRATION.md','docs/API.md','docs/ACCEPTANCE.md','templates/integration/server.mjs','templates/app/app.mjs','src/scaffold.mjs','dist/augmentor-browser.mjs'])assert.ok(names.includes(name),name);
+  assert.ok(!names.some(name=>name.startsWith('analysis/')||name.startsWith('examples/')));
   assert.ok(!names.some(name=>name.startsWith('test/')||name.endsWith('.token')||name.includes('/private/')));
   writeFileSync(join(consumer,'package.json'),JSON.stringify({name:'sdk-consumer-fixture',version:'0.0.0',private:true,type:'module'}));
   run('npm',['install','--ignore-scripts','--no-audit','--no-fund',join(root,packed.filename)]);
@@ -43,4 +44,12 @@ test('shipped archive installs in a clean consumer and its generated adapter pas
   writeFileSync(join(consumer,'fixture.test.mjs'),readFileSync(new URL('./fixture.mjs',import.meta.url)));
   const output=run(process.execPath,['--test','--test-reporter=tap','fixture.test.mjs']);
   assert.match(output,/# fail 0/);console.log(output);
+  // Agent-native kit: generate, check drift, then run the generated wiring end to end.
+  const kit=join(consumer,'kit');mkdirSync(kit);
+  run(process.execPath,[cli,'init','.','--id','fixture-records','--name','Fixture records','--template','app'],kit);
+  run(process.execPath,[cli,'validate','augmentor.app.json'],kit);
+  assert.match(run(process.execPath,[cli,'check','augmentor/app.mjs'],kit),/agree/);
+  writeFileSync(join(kit,'kit.test.mjs'),readFileSync(new URL('./app-fixture.mjs',import.meta.url)));
+  const kitOutput=run(process.execPath,['--test','--test-reporter=tap','kit.test.mjs'],kit);
+  assert.match(kitOutput,/# fail 0/);console.log(kitOutput);
 });

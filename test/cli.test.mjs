@@ -93,3 +93,27 @@ test('Codex scaffold and plan require a private explicit connection and preserve
  }
  assert.equal(existsSync(join(root,'profiles')),false);
 });
+
+test('app template, manifest/check drift detection, describe and stamped bundles',t=>{
+ const {root,run}=fixture(t);
+ let result=run('init','.','--id','record-desk','--template','app');assert.equal(result.status,0,result.stderr);
+ // The generated definition imports the published package; point it at this checkout for the CLI.
+ const sdk=new URL('../src/index.mjs',import.meta.url).href;
+ const definition=join(root,'augmentor/app.mjs');writeFileSync(definition,readFileSync(definition,'utf8').replaceAll("'@augmentor/app-sdk'",JSON.stringify(sdk)));
+ result=run('check','augmentor/app.mjs');assert.equal(result.status,0,result.stderr+result.stdout);assert.match(result.stdout,/agree/);
+ const manifest=JSON.parse(readFileSync(join(root,'augmentor.app.json')));
+ for(const name of ['record_desk_read_record','record_desk_ui_navigate','record_desk_reference','record_desk_proposal_status'])assert.ok(manifest.tools[0].names.includes(name),name);
+ writeFileSync(definition,readFileSync(definition,'utf8').replace("'Read one current record by its stable ID.'","'Read one record.'"));
+ result=run('check','augmentor/app.mjs');assert.equal(result.status,1);assert.match(result.stderr,/stale/);
+ assert.equal(run('manifest','augmentor/app.mjs').status,0);assert.equal(run('check','augmentor/app.mjs').status,0);
+ writeFileSync(join(root,'augmentor/agent-role.md'),'Use record_desk_delete_everything and web_search.');
+ result=run('check','augmentor/app.mjs');assert.equal(result.status,1);
+ assert.match(result.stderr,/record_desk_delete_everything/);assert.match(result.stdout,/web_search, which this workspace does not grant/);
+ assert.match(run('describe','augmentor/app.mjs').stdout,/## Premade prompts[\s\S]*summarize_record/);
+ assert.match(run('describe','augmentor/app.mjs','--format','llms').stdout,/^# My app\n[\s\S]*record_desk_share_record: .*needs approval/);
+ assert.equal(run('bundle','public/augmentor.mjs').status,0);
+ assert.equal(run('bundle','--verify','public/augmentor.mjs').status,0);
+ writeFileSync(join(root,'public/augmentor.mjs'),readFileSync(join(root,'public/augmentor.mjs'),'utf8')+'\n// local edit');
+ assert.match(run('bundle','--verify','public/augmentor.mjs').stderr,/BUNDLE_MODIFIED/);
+ assert.match(run('init','other','--template','nope').stderr,/Template is minimal or app/);
+});
