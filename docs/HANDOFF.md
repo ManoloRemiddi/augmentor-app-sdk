@@ -9,7 +9,7 @@ Branch `claude/admiring-dijkstra-sq4i9a` turns the SDK into an agent-native appl
 B1 (nested required), B2–B7 and B8: the starter tool was rejected by the real DSH
 descriptor compiler; parameters are now compiled to that DSL.
 
-Evidence on this branch (synthetic, Node 24.19.0, Linux): `npm test` (unit and integration
+Evidence on this source (synthetic, Node 24.19.0, Linux): `npm test` (unit and integration
 with a mock runtime that speaks the native frame protocol), `npm run test:package` (clean
 consumer installs the tarball, runs the minimal starter fixture and the app kit end to end),
 `npm run check:types`, `npm run test:browser` and `npm run test:example` (Chromium via
@@ -38,8 +38,8 @@ web` host in an isolated home, installs the Augmentor integration with the produ
 `augmentor-app register` through a runtime descriptor, serves the maintained panel through the
 product's embedding service and native host behind the SDK proxy, and opens an SDK host page in
 Chromium. With the paired product change for panel protocol v2 (augmentor-agent `9fa2317` plus
-`apps/browser/embed/entry.mjs`, `extension/host-commands.mjs`, `extension/sidepanel.js`; not
-merged), it passes: the panel advertises the v2 capabilities; a prefill lands in the owner's
+`apps/browser/embed/entry.mjs`, `extension/host-commands.mjs`, `extension/sidepanel.js`,
+since merged as [augmentor-agent#43](https://github.com/ManoloRemiddi/augmentor-agent/pull/43)), it passes: the panel advertises the v2 capabilities; a prefill lands in the owner's
 composer and an owner draft is never replaced; `agent.ask('triage')` delivers the premade
 prompt into the panel conversation; the DSH turn calls the app's tools (list, versioned update,
 UI open on the page, external reply as a proposal) and ends `completed`, reported to the page
@@ -48,8 +48,12 @@ background premade prompt runs through the server's AgentRunner, the SDK client 
 product native host to `completed`. Against the unmodified product panel the same proof fails
 at the capability check, as expected. The model is a deterministic OpenAI-compatible fixture.
 CI still pins product `8a085be`; the other platforms were not run. Not done: a real model, the
-packaged desktop application and its tray/home services, macOS/Windows, merging the product
-change, any live application change, publication. Preview 4 evidence below remains tied to its commits.
+packaged desktop application and its tray/home services, macOS/Windows, any live application
+change, publication. Both pull requests were merged on October 8: SDK
+[#3](https://github.com/ManoloRemiddi/augmentor-app-sdk/pull/3) and product
+[#43](https://github.com/ManoloRemiddi/augmentor-agent/pull/43); product CI was green on all
+platforms after one re-run each of two unrelated tests (a memory-service start timeout on
+Debian and a Windows ARM process test). Preview 4 evidence below remains tied to its commits.
 
 ## Preview 4 source candidate — October 3, 2026
 

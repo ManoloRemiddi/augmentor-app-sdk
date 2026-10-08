@@ -22,8 +22,11 @@ const db = {
 };
 
 const port = Number(process.env.PORT || 4317), origin = `http://127.0.0.1:${port}`;
-const dir = mkdtempSync(join(tmpdir(), 'studio-desk-')), runtimeTokenFile = join(dir, 'runtime.token');
-writeFileSync(runtimeTokenFile, randomBytes(32).toString('hex'), {mode: 0o600});
+// With --runtime, STUDIO_DESK_RUNTIME_TOKEN must name the private token file given to the
+// registered tool module (toolConfig tokenFile); mock mode uses a throwaway token.
+const dir = mkdtempSync(join(tmpdir(), 'studio-desk-'));
+const runtimeTokenFile = process.env.STUDIO_DESK_RUNTIME_TOKEN || join(dir, 'runtime.token');
+if (!process.env.STUDIO_DESK_RUNTIME_TOKEN) writeFileSync(runtimeTokenFile, randomBytes(32).toString('hex'), {mode: 0o600});
 const ownerToken = randomBytes(16).toString('hex');
 const authorizeOwner = request => (request.headers.cookie || '').split(/;\s*/).includes('studio_owner=' + ownerToken) && 'owner';
 

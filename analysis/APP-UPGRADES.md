@@ -1,8 +1,8 @@
-<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
+<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Upgrade plans for the three reference apps
 
 **Status: plans, 2026-10-07. Nothing here has been applied to any app.** Each plan uses SDK
-0.2.0-preview.1 (this branch) and must go through the owning app's own deployment and data
+0.2.0-preview.1 (on `main`) and must go through the owning app's own deployment and data
 preservation rules. Private details are omitted; apps are described by their public role.
 
 ## Common first steps (all three)

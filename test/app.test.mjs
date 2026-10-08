@@ -39,7 +39,7 @@ function dealDesk(db) {
 }
 
 async function setup(t, {script} = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'sdk-app-')); t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const dir = mkdtempSync(join(tmpdir(), 'sdk-app-'));
   const runtimeTokenFile = join(dir, 'runtime.token'), mcpTokenFile = join(dir, 'mcp.token');
   writeFileSync(runtimeTokenFile, 'synthetic-runtime-token-'.repeat(3)); writeFileSync(mcpTokenFile, 'synthetic-mcp-token-'.repeat(3));
   const db = new Map([['d1', {id: 'd1', stage: 'new', version: 1}]]);
@@ -56,7 +56,8 @@ async function setup(t, {script} = {}) {
   const client = runtime.client();
   server = createAugmentorServer(app, {origin, authorizeOwner: r => r.headers.cookie === 'owner=1' ? 'owner@fixture' : false, runtimeTokenFile, dataDir: join(dir, 'state'), client, mcp: {tokenFile: mcpTokenFile},
     automation: a => a.on('mail.received', {name: 'triage', prompt: 'triage_mail', vars: e => ({mailId: e.data.mailId}), key: e => 'mail:' + e.data.mailId})});
-  t.after(async () => {server.close(); runtime.close(); for (const s of sockets) s.destroy(); await new Promise(r => httpServer.close(r));});
+  // Close the SQLite stores before removing their directory: Windows refuses to delete open files.
+  t.after(async () => {server.close(); runtime.close(); for (const s of sockets) s.destroy(); await new Promise(r => httpServer.close(r)); rmSync(dir, {recursive: true, force: true});});
   const owner = (path, init = {}) => fetch(origin + path, {...init, headers: {Cookie: 'owner=1', ...(init.body ? {'Content-Type': 'application/json', Origin: origin} : {}), ...(init.headers || {})}});
   const waitFor = async (fn, ms = 4000) => {const end = Date.now() + ms; for (;;) {const v = await fn(); if (v) return v; if (Date.now() > end) throw Error('timed out'); await new Promise(r => setTimeout(r, 20));}};
   return {app, db, server, origin, owner, runtime, waitFor, mcpTokenFile, runtimeTokenFile};
@@ -156,4 +157,22 @@ test('memory: agent suggestions stay unconfirmed and owner decisions become feed
   const read = await server.toolkit.call('notes_preferences', {tool: 'notes_send'}, {sessionId: 's'});
   assert.deepEqual(read.feedback[0], {...read.feedback[0], tool: 'notes_send', decision: 'edit', note: 'Be firmer with agencies', changed: ['tone']});
   assert.equal(read.preferences.length, 2);
+});
+
+test('the panel proxy accepts the owner check that returns an owner ID', async t => {
+  const upstream = http.createServer((req, res) => {res.writeHead(200, {'content-type': 'text/plain'}); res.end(req.url + ' ' + (req.headers.authorization ? 'auth' : 'none'));});
+  upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
+  const dir = mkdtempSync(join(tmpdir(), 'sdk-proxy-')), tokenFile = join(dir, 'proxy.token');
+  writeFileSync(tokenFile, 'p'.repeat(40), {mode: 0o600});
+  const app = defineApp({id: 'proxy-app', name: 'Proxy app', tools: [defineTool({name: 'proxy_app_ping', description: 'Ping', effect: 'read', handler: () => ({ok: true})})]});
+  let server;
+  const front = http.createServer(async (req, res) => {if (!(await server.node(req, res))) {res.writeHead(404); res.end();}});
+  front.listen(0, '127.0.0.1'); await once(front, 'listening');
+  const origin = 'http://127.0.0.1:' + front.address().port;
+  server = createAugmentorServer(app, {origin, runtimeTokenFile: tokenFile, authorizeOwner: req => /owner=1/.test(req.headers.cookie || '') && 'owner-7',
+    proxy: {tokenFile, port: upstream.address().port}});
+  t.after(() => {server.close(); front.close(); upstream.close(); rmSync(dir, {recursive: true, force: true});});
+  const owner = await fetch(origin + '/augmentor/sidepanel.html', {headers: {Cookie: 'owner=1'}});
+  assert.equal(owner.status, 200); assert.equal(await owner.text(), '/embed/proxy-app/sidepanel.html auth');
+  assert.equal((await fetch(origin + '/augmentor/sidepanel.html')).status, 403);
 });

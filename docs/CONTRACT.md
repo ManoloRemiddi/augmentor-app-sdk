@@ -1,7 +1,7 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Connection contract v1
 
-Protocol: `augmentor-app/1`. Manifest schema: `1`. The released preview 3 baseline supports `dsh`; the unreleased preview 4 extension below adds explicit experimental `codex` and platform adapters. Versions with a different protocol major fail closed. Preview package patch versions may add optional fields; required semantic changes require a protocol revision.
+Protocol: `augmentor-app/1`. Manifest schema: `1`. The released preview 3 baseline supports `dsh`; the preview 4 extension below (included in 0.2.0-preview.1 on `main`, not yet released) adds explicit experimental `codex` and platform adapters. Versions with a different protocol major fail closed. Preview package patch versions may add optional fields; required semantic changes require a protocol revision.
 
 Developer CLI and scaffold behavior is documented in [API](API.md). Preview 3
 keeps this runtime protocol unchanged. File preflight never imports app modules;

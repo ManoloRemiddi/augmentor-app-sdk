@@ -7,11 +7,15 @@ change your data, drive your pages, render rich results and run background work,
 app hands it work through buttons, events and schedules. The owner stays in control through
 server-enforced approvals, a review queue, preferences and an audit trail.
 
-**0.2.0-preview.1 source (this branch); latest published package: preview 3.** 0.2 is
-unpublished and verified with synthetic fixtures, a mock runtime, real Chromium and the real
-DSH 0.1.5-rc.1 descriptor compiler; it is not yet qualified against an installed Augmentor
-runtime. The 0.1 API and protocol `augmentor-app/1` are unchanged, and no live application
-is changed by this source. Requires Node 24.14+ and a compatible managed Augmentor runtime
+**`main` is 0.2.0-preview.1, used for new apps; the latest release archive is preview 3
+(0.1 API).** 0.2 is verified with synthetic fixtures, a mock runtime, real Chromium, the real
+DSH 0.1.5-rc.1 agent loop and a real DSH web host with the Augmentor integration installed
+and the maintained panel open (`npm run test:installed`; deterministic model). It has not yet
+been run with a real model or on a packaged desktop, and no release archive is published.
+In-panel premade prompts need an Augmentor build that includes
+[augmentor-agent#43](https://github.com/ManoloRemiddi/augmentor-agent/pull/43); older panels fall back to background runs.
+The 0.1 API and protocol `augmentor-app/1` are unchanged, and no live application is
+changed by this source. Requires Node 24.14+ and a compatible managed Augmentor runtime
 exposing `augmentor-app/1`. This package does not include the Augmentor UI, model runtime,
 Google credentials or another agent loop.
 
@@ -54,16 +58,14 @@ and independently switchable per workspace; cloud voice providers are deferred.
 
 ## Install
 
-For new integrations, download the archive and checksum from the
-[preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3).
-The two qualified live apps remain on preview 2; this onboarding release does not
-redeploy them. The repository and release assets are public; no GitHub account is needed to read
-the source or download the SDK.
-Use the current documentation on main for deployment notes. For the released
-DSH/Linux baseline, check out `v0.1.0-preview.3` before building. This branch builds
-`0.2.0-preview.1`; the preview 4 qualification in
-[runtime alignment](docs/RUNTIME-ALIGNMENT.md) applies to its recorded commits, not to 0.2.
-In either checkout, run:
+**New apps:** build the 0.2 archive from `main` and keep it in the app's `vendor/` folder
+(commands below, then `npm install --save-exact ./vendor/augmentor-app-sdk-0.2.0-preview.1.tgz`).
+**0.1 API only:** download the archive and checksum from the
+[preview 3 release](https://github.com/ManoloRemiddi/augmentor-app-sdk/releases/tag/v0.1.0-preview.3),
+or check out `v0.1.0-preview.3` before building. The two live apps remain on preview 2
+until they are migrated. The repository and release assets are public; no GitHub account is
+needed. The preview 4 qualification in [runtime alignment](docs/RUNTIME-ALIGNMENT.md) applies
+to its recorded commits. In either checkout, run:
 
 ```sh
 npm ci --ignore-scripts
@@ -77,7 +79,7 @@ Playwright), `npm run check:types` (TypeScript), `npm run test:agent-loop -- <DS
 checkout>` (the real DSH agent loop on a product-installed workspace preset),
 `npm run test:installed -- <built product> <python>` (real DSH web host, product installer,
 maintained panel in Chromium), and `npm run build` to regenerate the
-single-file browser bundle. Use a source-built archive only for development. The published
+single-file browser bundle. Record the commit an archive was built from. The published
 preview 3 archive and existing live apps remain unchanged. Installing a newer SDK alone
 does not add product adapters to an older Augmentor installation.
 

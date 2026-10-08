@@ -157,7 +157,7 @@ export function createAugmentorServer(app, {origin, authorizeOwner, runtimeToken
   const review = createReviewEndpoint({toolkit, proposals, origin, authorize: authorizeOwner, path: basePath + '/review'});
   const stream = createEventStream(events, {authorize: authorizeOwner, types: eventTypes});
   const mcpServer = mcp ? createMcpServer({toolkit, prompts: app.prompts, resources: app.resources, name: app.id, title: app.name, tokenFile: mcp.tokenFile, authenticate: mcp.authenticate, instructions: app.description || undefined}) : null;
-  const panel = proxy ? createProxy({profile: proxy.profile || app.id, origin, tokenFile: proxy.tokenFile, authorize: proxy.authorize || authorizeOwner, socketPath: proxy.socketPath, port: proxy.port, path: proxy.path || '/augmentor/'}) : null;
+  const panel = proxy ? createProxy({profile: proxy.profile || app.id, origin, tokenFile: proxy.tokenFile, authorize: proxy.authorize || (async req => Boolean(await authorizeOwner(req))), socketPath: proxy.socketPath, port: proxy.port, path: proxy.path || '/augmentor/'}) : null;
   const runs = new Map();
   // Owner decisions become feedback the agent reads before its next draft.
   if (preferences) events.subscribe('proposal.decided', event => {

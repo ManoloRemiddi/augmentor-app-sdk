@@ -175,11 +175,13 @@ async function main(){
     console.log(`${app.id}: definition, manifest and descriptors agree (${descriptors.tools.length} tools, fingerprint ${descriptors.fingerprint.slice(0,12)})`);return;
   }
   if(command==='bundle'){
-    const source=readFileSync(new URL('../dist/augmentor-browser.mjs',import.meta.url),'utf8');
+    // Line endings are normalised so a CRLF checkout (Git on Windows) verifies the same bytes.
+    const lf=text=>text.replace(/\r\n/g,'\n');
+    const source=lf(readFileSync(new URL('../dist/augmentor-browser.mjs',import.meta.url),'utf8'));
     const digest=createHash('sha256').update(source).digest('hex');
     if(args[0]==='--verify'){
       check(args[1],'INVALID_REQUEST','Usage: augmentor-app bundle --verify vendored.mjs');
-      const copy=readFileSync(resolve(args[1]),'utf8');
+      const copy=lf(readFileSync(resolve(args[1]),'utf8'));
       const stamp=/^\/\/ augmentor-app-sdk-bundle sha256=([a-f0-9]{64}) version=(\S+)\n/.exec(copy);
       check(stamp,'BUNDLE_UNSTAMPED','This file was not produced by augmentor-app bundle');
       const body=copy.slice(stamp[0].length);

@@ -1,4 +1,4 @@
-<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
+<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Capability catalogue: what the Augmentor agent can do inside software
 
 **Status: catalogue, 2026-10-07.** This is the long list the SDK is designed against. It

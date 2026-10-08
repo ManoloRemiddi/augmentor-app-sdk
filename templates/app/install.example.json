@@ -1,5 +1,6 @@
 {
   "origin": "http://127.0.0.1:8000",
+  "tokenFile": "/absolute/path/to/private/panel-proxy.token",
   "toolConfig": {
     "__PLUGIN_ID__": {
       "url": "http://127.0.0.1:8000/api/augmentor/tool",

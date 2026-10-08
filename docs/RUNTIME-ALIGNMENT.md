@@ -15,7 +15,7 @@ after paired [product PR #34](https://github.com/ManoloRemiddi/augmentor-agent/p
 merged at [`602669a`](https://github.com/ManoloRemiddi/augmentor-agent/commit/602669aa6ac741f2ccd8633692630b12578ec741).
 Each merge has exactly its reviewed PR tree. The functional source is unchanged
 from the qualified pair below; all later changes are documentation only.
-Current main builds preview 4. Release archive, runtime installation and app
+At that merge main built preview 4; main now builds 0.2.0-preview.1, which keeps these adapters and adds the agent-native kit ([GUIDE.md](GUIDE.md)). Release archive, runtime installation and app
 migration remain separate. [Compatibility maintenance](MAINTENANCE.md) defines
 the required impact review for future harness, OS, UI and settings changes.
 All six merged-source SDK checks also pass in

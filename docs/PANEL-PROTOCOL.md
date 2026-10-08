@@ -1,13 +1,14 @@
-<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
+<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Embedded panel protocol v2 (product contract)
 
-**Status: implemented on the host side by SDK 0.2.0-preview.1; the product side exists as a
-paired change to augmentor-agent `9fa2317` (`apps/browser/embed/entry.mjs`,
-`apps/browser/extension/host-commands.mjs`, `sidepanel.js`, `docs/WORKSPACE-EMBEDDING.md`)
-that is not yet merged.** With that change, `npm run test:installed` passes against a real DSH
-web host (see HANDOFF.md). A released panel without it advertises no v2 capability, so every
-feature below degrades to the v1 behaviour described in each section. The panel side must not
-be emulated by scripting the panel's DOM or by a second agent loop in the page.
+**Status: implemented on both sides.** The SDK host side ships in 0.2.0-preview.1. The
+product side was merged in [augmentor-agent#43](https://github.com/ManoloRemiddi/augmentor-agent/pull/43)
+(`apps/browser/embed/entry.mjs`, `apps/browser/extension/host-commands.mjs`, `sidepanel.js`,
+`docs/WORKSPACE-EMBEDDING.md`). `npm run test:installed` proves it against a real DSH web host.
+An installed Augmentor advertises v2 only once its build includes that change; an older panel
+advertises no v2 capability, so every feature below degrades to the v1 behaviour described in
+each section. The panel side must not be emulated by scripting the panel's DOM or by a second
+agent loop in the page.
 
 ## Negotiation
 
