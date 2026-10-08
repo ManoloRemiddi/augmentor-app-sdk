@@ -39,7 +39,7 @@ function dealDesk(db) {
 }
 
 async function setup(t, {script} = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'sdk-app-')); t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const dir = mkdtempSync(join(tmpdir(), 'sdk-app-'));
   const runtimeTokenFile = join(dir, 'runtime.token'), mcpTokenFile = join(dir, 'mcp.token');
   writeFileSync(runtimeTokenFile, 'synthetic-runtime-token-'.repeat(3)); writeFileSync(mcpTokenFile, 'synthetic-mcp-token-'.repeat(3));
   const db = new Map([['d1', {id: 'd1', stage: 'new', version: 1}]]);
@@ -56,7 +56,8 @@ async function setup(t, {script} = {}) {
   const client = runtime.client();
   server = createAugmentorServer(app, {origin, authorizeOwner: r => r.headers.cookie === 'owner=1' ? 'owner@fixture' : false, runtimeTokenFile, dataDir: join(dir, 'state'), client, mcp: {tokenFile: mcpTokenFile},
     automation: a => a.on('mail.received', {name: 'triage', prompt: 'triage_mail', vars: e => ({mailId: e.data.mailId}), key: e => 'mail:' + e.data.mailId})});
-  t.after(async () => {server.close(); runtime.close(); for (const s of sockets) s.destroy(); await new Promise(r => httpServer.close(r));});
+  // Close the SQLite stores before removing their directory: Windows refuses to delete open files.
+  t.after(async () => {server.close(); runtime.close(); for (const s of sockets) s.destroy(); await new Promise(r => httpServer.close(r)); rmSync(dir, {recursive: true, force: true});});
   const owner = (path, init = {}) => fetch(origin + path, {...init, headers: {Cookie: 'owner=1', ...(init.body ? {'Content-Type': 'application/json', Origin: origin} : {}), ...(init.headers || {})}});
   const waitFor = async (fn, ms = 4000) => {const end = Date.now() + ms; for (;;) {const v = await fn(); if (v) return v; if (Date.now() > end) throw Error('timed out'); await new Promise(r => setTimeout(r, 20));}};
   return {app, db, server, origin, owner, runtime, waitFor, mcpTokenFile, runtimeTokenFile};
