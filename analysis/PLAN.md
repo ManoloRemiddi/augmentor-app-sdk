@@ -1,7 +1,7 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Plan: Augmentor App SDK 0.2 — the agent-native app kit
 
-**Status: plan, 2026-10-07; implemented on this branch (see the log at the end).**
+**Status: plan, 2026-10-07; implemented and merged to `main` on 2026-10-08 (see the log at the end).**
 Inputs: [FINDINGS.md](FINDINGS.md), [RESEARCH.md](RESEARCH.md), [CAPABILITIES.md](CAPABILITIES.md).
 
 ## 1. Goal

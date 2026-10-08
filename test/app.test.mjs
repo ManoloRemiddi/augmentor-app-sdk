@@ -157,3 +157,21 @@ test('memory: agent suggestions stay unconfirmed and owner decisions become feed
   assert.deepEqual(read.feedback[0], {...read.feedback[0], tool: 'notes_send', decision: 'edit', note: 'Be firmer with agencies', changed: ['tone']});
   assert.equal(read.preferences.length, 2);
 });
+
+test('the panel proxy accepts the owner check that returns an owner ID', async t => {
+  const upstream = http.createServer((req, res) => {res.writeHead(200, {'content-type': 'text/plain'}); res.end(req.url + ' ' + (req.headers.authorization ? 'auth' : 'none'));});
+  upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
+  const dir = mkdtempSync(join(tmpdir(), 'sdk-proxy-')), tokenFile = join(dir, 'proxy.token');
+  writeFileSync(tokenFile, 'p'.repeat(40), {mode: 0o600});
+  const app = defineApp({id: 'proxy-app', name: 'Proxy app', tools: [defineTool({name: 'proxy_app_ping', description: 'Ping', effect: 'read', handler: () => ({ok: true})})]});
+  let server;
+  const front = http.createServer(async (req, res) => {if (!(await server.node(req, res))) {res.writeHead(404); res.end();}});
+  front.listen(0, '127.0.0.1'); await once(front, 'listening');
+  const origin = 'http://127.0.0.1:' + front.address().port;
+  server = createAugmentorServer(app, {origin, runtimeTokenFile: tokenFile, authorizeOwner: req => /owner=1/.test(req.headers.cookie || '') && 'owner-7',
+    proxy: {tokenFile, port: upstream.address().port}});
+  t.after(() => {server.close(); front.close(); upstream.close(); rmSync(dir, {recursive: true, force: true});});
+  const owner = await fetch(origin + '/augmentor/sidepanel.html', {headers: {Cookie: 'owner=1'}});
+  assert.equal(owner.status, 200); assert.equal(await owner.text(), '/embed/proxy-app/sidepanel.html auth');
+  assert.equal((await fetch(origin + '/augmentor/sidepanel.html')).status, 403);
+});

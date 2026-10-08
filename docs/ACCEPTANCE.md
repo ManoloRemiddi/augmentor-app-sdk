@@ -50,8 +50,8 @@ instruction. Publish durable docs alongside source when authorized.
 
 For SDK maintainers, `npm run test:package` exercises the shipped artifact and
 scaffold in a clean temporary consumer using synthetic HTTP/WebSocket and record
-fixtures. It does not register anything, start DSH, call a model, or exercise the
-owner's third app. Live product/application qualification remains separate.
+fixtures. It does not register anything, start DSH, call a model, or exercise a real
+application. Live product/application qualification remains separate.
 
 ## Preview 4 adapter acceptance
 
@@ -79,8 +79,8 @@ Source checks (no runtime): `npm test`, `npm run test:package`, `npm run check:t
 `npm run test:agent-loop -- <product>/release/dsh/node_modules/@deepseek-ai/dsh <product>`
 (the real DSH agent loop on a product-installed workspace preset), and
 `npm run test:installed -- <built product> <python with websocket-client>` (a real DSH web
-host with the product integration installed, the maintained panel in Chromium; panel v2 needs
-the paired product change; see HANDOFF.md). Run the SDK's DSH schema test against the installed
+host with the product integration installed, the maintained panel in Chromium; panel v2 needs a
+product build that includes augmentor-agent#43; see HANDOFF.md). Run the SDK's DSH schema test against the installed
 runtime's compiler with `AUGMENTOR_DSH_TOOLS_SCHEMA=/path/to/dsh-tools/lib/types/schema.js npm test`.
 
 Live checks to add to the delivery record: every tool loads in the real runtime after

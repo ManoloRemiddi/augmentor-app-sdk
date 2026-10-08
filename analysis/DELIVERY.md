@@ -1,4 +1,4 @@
-<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
+<!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Delivery report — Augmentor App SDK 0.2.0-preview.1 (2026-10-08)
 
 Branch `claude/admiring-dijkstra-sq4i9a`. Nothing was published, merged, deployed or changed
@@ -69,12 +69,11 @@ panel conversation, the agent operating the application (data, UI, a gated exter
 and the panel reporting the turn back to the page; the owner approving in the application; and
 a background premade prompt completing through the SDK client and the product native host.
 
-Panel protocol v2 product side: implemented as a paired change to augmentor-agent `9fa2317`
-(embedded entry, a small `host-commands.mjs` used by the side panel, a unit test and the
-embedding document; about 80 lines). It is delivered as a patch file outside this repository,
-since this branch does not change the product repository. It needs review and merging in the
-product before released panels advertise v2; until then the SDK uses the T1 paths, which work
-today.
+Panel protocol v2 product side: implemented in augmentor-agent (embedded entry, a small
+`host-commands.mjs` used by the side panel, a unit test and the embedding document; about 80
+lines) and merged as [augmentor-agent#43](https://github.com/ManoloRemiddi/augmentor-agent/pull/43)
+on October 8. Installed panels advertise v2 once their build includes it; older panels use the
+T1 paths, which work today.
 
 Not done: a real model (no credentials were used), the packaged desktop application with its
 tray and home services, macOS/Windows runs, the product's jsdom panel suites (their test
@@ -91,13 +90,12 @@ any live-app migration, publication.
 3. Q7: confirm "agent drafts, owner commits" as the default recommendation.
 4. Q9: when to move Sponsor desk and the YouTube workspace off preview 2 (start with the
    single-file bundle; see APP-UPGRADES.md).
-5. Whether to publish 0.2.0-preview.1 as a release, and whether to open the product PR for
-   panel protocol v2 (patch ready, proven by `test:installed`) and the E1/E12/E13 fixes.
+5. Whether to publish 0.2.0-preview.1 as a release archive (both pull requests are merged).
 
 ## Notes
 
-- The tutoring app was analysed read-only because you asked for all three apps; the SDK's
-  AGENTS.md says not to inspect the third reference app, so please confirm that was intended.
+- The tutoring app was analysed read-only because you asked for all three apps. On October 8
+  you removed the old AGENTS.md rule about not building or inspecting a "third reference app".
 - Security issues in private repositories are listed by title only in this public repository.
 - One research report was flagged by the harness for an instruction-shaped pattern; it was the
   Claude Agent SDK permission-mode name (`bypassPermissions`) quoted in the research, not an

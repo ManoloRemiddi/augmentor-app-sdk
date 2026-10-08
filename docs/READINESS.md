@@ -1,8 +1,8 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Feasibility and readiness
 
-This guide describes the released DSH/Linux baseline. The unreleased preview 4
-[alignment candidate](RUNTIME-ALIGNMENT.md) adds feature negotiation, experimental
+This guide describes the released DSH/Linux baseline. The preview 4
+[alignment candidate](RUNTIME-ALIGNMENT.md), now part of 0.2.0-preview.1 on `main`, adds feature negotiation, experimental
 Codex and OS discovery/startup adapters with separate platform and customer gates.
 
 The design is feasible for an owner installing trusted applications on a Linux
@@ -53,9 +53,9 @@ their tests do not prove every existing backend implements the same guarantees.
 
 ## Gates before a broader release
 
-1. The owner independently builds the third application without this agent's
-   involvement. That is the adoption test; fixtures and these two migrations
-   do not establish third-party usability.
+1. A new application is built from these docs by someone (or an agent) without the SDK
+   author's help. That is the adoption test; fixtures and these two migrations do not
+   establish third-party usability.
 2. The two existing apps are deployed and their real model/tool/browser routes
    qualified on Linux. Preserve the recorded rollback procedure for further updates.
 3. Exercise representative real tasks, cancellation, sleep/reconnect and unknown

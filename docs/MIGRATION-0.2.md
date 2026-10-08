@@ -1,7 +1,7 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Moving an integration from 0.1 to 0.2
 
-**0.2.0-preview.1 is unpublished source.** Installing it does not change any running
+**0.2.0-preview.1 is on `main` but has no release archive yet.** Installing it does not change any running
 application, registered workspace or Augmentor installation. Live applications stay on their
 pinned preview until their owner decides to move, through their own deployment procedure.
 

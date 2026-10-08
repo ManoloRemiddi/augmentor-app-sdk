@@ -6,8 +6,14 @@ any real deployment works.
 
 ```sh
 node examples/studio-desk/server.mjs          # mock model, no Augmentor needed
-node examples/studio-desk/server.mjs --runtime # use an installed Augmentor registered as studio-desk
+STUDIO_DESK_RUNTIME_TOKEN=/private/runtime.token node examples/studio-desk/server.mjs --runtime
 ```
+
+`--runtime` talks to an installed Augmentor in which you have registered this example as
+the `studio-desk` workspace (its tool module and `toolConfig` token file pointing at this
+server; see docs/QUICKSTART.md). It has no panel proxy, so the "Ask" buttons run in the
+background. For a complete template to copy, use `augmentor-app init --template app`;
+this example is a demonstration, not a registration template.
 
 Open the printed URL, then try:
 

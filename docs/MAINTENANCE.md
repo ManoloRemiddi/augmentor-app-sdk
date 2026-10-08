@@ -3,7 +3,8 @@
 
 The SDK and product have separate versions and repositories. An Augmentor feature
 does not become an SDK feature merely because both packages build. Current source
-is preview 4; the published onboarding package remains preview 3. Start with
+on `main` is 0.2.0-preview.1, which includes the preview 4 adapters; the published onboarding
+package remains preview 3. Start with
 [runtime alignment](RUNTIME-ALIGNMENT.md) for the immutable qualified source pair,
 platform/harness matrix and remaining installation gates.
 
@@ -37,8 +38,8 @@ OS permission or memory engine.
    and `npm run test:runtime -- /absolute/path/to/paired-product` in the SDK, plus
    `npm run test:agent-loop -- <product>/release/dsh/node_modules/@deepseek-ai/dsh <product>`
    and `npm run test:installed -- <product> <python with websocket-client>` (Linux).
-   Use isolated synthetic state. The packed consumer is a fixture, not the
-   owner's independent third application.
+   Use isolated synthetic state. The packed consumer is a fixture, not evidence that a real
+   application works.
 4. Pin the product SHA in `.github/workflows/validate.yml` to the reviewed
    functional revision. Keep the pin immutable; do not replace it with `main`.
    Run the six source/packed/paired jobs on Linux, macOS and Windows, plus the

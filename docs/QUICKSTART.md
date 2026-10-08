@@ -1,21 +1,31 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Integrate an application
 
-This guide preserves the published preview 3 DSH/Linux installation recipe.
-For preview 4 source builds, explicit Codex selection or platform setup, first
-read [runtime alignment](RUNTIME-ALIGNMENT.md). Its helpers require the paired
-product candidate; installing the SDK alone does not update the product.
+Registration, tokens, the runtime check and embedding are the same for every SDK version.
+New apps use the 0.2 kit on `main` (section 1a and [GUIDE.md](GUIDE.md)); the code examples in
+sections 3–6 show the 0.1 minimal scaffold, which existing integrations still use. For Codex or
+platform setup, first read [runtime alignment](RUNTIME-ALIGNMENT.md); installing the SDK alone
+does not update the product.
 
 Read [the agent entry guide](AGENT-INTEGRATION.md) first. These steps use an
 existing trusted single-owner Node application. The scaffold is integration code,
 not a separate reference app. Replace example IDs/ports with the target app's
 stable identity and actual origin. Preserve existing identities during migration.
 
-> **0.2 source:** for the agent-native kit (approvals, UI control, prompts, automation,
-> change feed), use `init --template app` and follow [GUIDE.md](GUIDE.md) alongside the
-> steps below; registration, tokens and acceptance are the same.
+## 1a. New apps: install the 0.2 kit from `main`
 
-## 1. Install the pinned public release
+```sh
+git clone https://github.com/ManoloRemiddi/augmentor-app-sdk.git /tmp/augmentor-app-sdk
+(cd /tmp/augmentor-app-sdk && npm ci --ignore-scripts && npm test && npm pack)
+mkdir -p vendor && cp /tmp/augmentor-app-sdk/augmentor-app-sdk-0.2.0-preview.1.tgz vendor/
+npm install --save-exact ./vendor/augmentor-app-sdk-0.2.0-preview.1.tgz
+./node_modules/.bin/augmentor-app init . --id my-app --name 'My app' --template app
+```
+
+Record the SDK commit you packed. Then follow the generated `augmentor/INTEGRATION.md`, and
+sections 2, 4 and 6 below for the runtime check, tokens and registration, then [acceptance](ACCEPTANCE.md).
+
+## 1. Install the pinned public release (0.1 API)
 
 Requirements: Node >=24.14, an existing application
 package.json and a compatible managed Augmentor runtime on a Linux model host.
@@ -96,7 +106,8 @@ root, including symlink resolution. The CLI validates files without executing th
 There are three separate authorities: the owner's browser session, the app-agent
 backend token, and the proxy-to-Augmentor token. Do not reuse them.
 
-For this scaffold, create an ignored directory and a fresh app-agent token. This
+For this scaffold, create an ignored directory and a fresh app-agent token (the 0.2
+template names the same token `runtime.token` and its server option `runtimeTokenFile`). This
 command refuses to overwrite an existing token:
 
 ```sh
@@ -141,7 +152,8 @@ const integration = createAppIntegration({
   origin: install.origin,
   proxyTokenFile: install.tokenFile,
   appAgentTokenFile: install.toolConfig['my-app-tools'].tokenFile,
-  authorizeOwner, // existing check of the owner's session; returns exactly true
+  authorizeOwner, // existing owner-session check; this 0.1 scaffold's proxy needs exactly true
+                  // (0.2 createAugmentorServer also accepts an owner ID or false)
   readRecord     // existing authoritative reader: id -> {id,version,title} or null
 });
 // In the existing Node HTTP handler, before consuming the body:
@@ -183,8 +195,10 @@ panel.setContext({view: 'records', recordId: 'selected-id', version: 3});
 // On component teardown: panel.destroy();
 ```
 
-If there is no bundler, serve only the SDK's `src/browser.mjs` at an authenticated
-same-origin static route and import `mountAugmentor` from that URL. Do not expose
+If there is no bundler, serve the SDK's single-file bundle `dist/augmentor-browser.mjs`
+(copy it with `augmentor-app bundle public/augmentor.mjs`) at an authenticated same-origin
+static route and import `mountAugmentor` from that URL. Serving `src/browser.mjs` alone breaks
+because it imports sibling modules. Do not expose
 all of node_modules. Context is a bounded hint; tools reread actual records.
 Augmentor owns chat rendering/history. Default settings opens the maintained
 settings page in a tab; `onSettings(url)` can use the app's own dialog.
