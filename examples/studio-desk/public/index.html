@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio desk (SDK example)</title>
+<style>
+:root{--augmentor-ui-accent:#7c3aed;font-family:system-ui,sans-serif;color:#1f2937;background:#faf7f2}
+body{margin:0;display:grid;grid-template-columns:1fr 380px;min-height:100vh}
+main{padding:1.2rem 1.5rem;display:grid;gap:1.2rem;align-content:start}
+aside{border-left:1px solid #e5e1d8;padding:1rem;display:grid;gap:1rem;align-content:start;background:#fff}
+h1{margin:0;font-size:1.3rem}h2{margin:.2rem 0;font-size:1rem}
+.deals{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem}
+.deal,.mail,.calc{background:#fff;border:1px solid #e5e1d8;border-radius:10px;padding:.8rem}
+.deal small{opacity:.7}button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid #7c3aed;background:#fff;color:#7c3aed;padding:.25rem .6rem}
+.note{font-size:.85rem;opacity:.75}#activity{font-size:.85rem;max-height:220px;overflow:auto;display:grid;gap:.25rem}
+[data-augmentor-note]::after{content:attr(data-augmentor-note);display:block;font-size:.8rem;color:#7c3aed}
+</style></head>
+<body>
+<main>
+  <header><h1>Studio desk</h1><p class="note">Synthetic example of the Augmentor App SDK. Mode: <span id="mode">…</span></p></header>
+  <section><h2>Deals</h2><div class="deals" id="deals"></div></section>
+  <section class="mail" data-augmentor-key="mail:m1"><h2>Inbox</h2><div id="mail"></div>
+    <button data-augmentor-prompt="triage_mail" data-augmentor-vars='{"mailId":"m1"}'>Triage with agent</button>
+    <button id="simulate">Simulate new email (automation)</button></section>
+  <section class="calc" data-augmentor-key="calculator"><h2>Fee calculator</h2>
+    <form id="calculator"><label>Deliverable <input name="deliverable"></label> <label>Fee <input name="fee" type="number"></label> <button type="submit">Save quote</button></form></section>
+</main>
+<aside>
+  <section><h2>Waiting for you</h2><div id="review"></div></section>
+  <section><h2>Agent activity</h2><div id="activity"></div></section>
+  <section><h2>Agent answers</h2><div id="answers" class="note">Use an Ask button.</div></section>
+</aside>
+<script type="module" src="/page.js"></script>
+</body></html>

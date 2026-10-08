@@ -1,6 +1,56 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Developer preview handoff
 
+## 0.2.0-preview.1 source — October 7, 2026
+
+Branch `claude/admiring-dijkstra-sq4i9a` turns the SDK into an agent-native application kit
+(see [GUIDE.md](GUIDE.md), [MIGRATION-0.2.md](MIGRATION-0.2.md) and the repository's
+`analysis/` folder for findings, research, capability catalogue and plan). It also fixes
+B1 (nested required), B2–B7 and B8: the starter tool was rejected by the real DSH
+descriptor compiler; parameters are now compiled to that DSL.
+
+Evidence on this branch (synthetic, Node 24.19.0, Linux): `npm test` (unit and integration
+with a mock runtime that speaks the native frame protocol), `npm run test:package` (clean
+consumer installs the tarball, runs the minimal starter fixture and the app kit end to end),
+`npm run check:types`, `npm run test:browser` and `npm run test:example` (Chromium via
+Playwright against a synthetic stand-in panel), the DSH descriptor tests against the real
+dsh-tools 0.1.5-rc.1 schema compiler, and `scripts/proof-dsh.mjs` against the real DSH tool
+runtime (dsh-tools/system-prompt/scope 0.1.5-rc.1, cordis 4.0.2 installed from npm): the
+starter's constrained tool and nested required fields register and validate, where the
+preview 4 source failed silently with `unknown tool`. The paired product proof
+(`npm run test:runtime`) passes 27/27 against a built copy of product `main` `9fa2317` with the
+packed 0.2 SDK (Linux), confirming the 0.1 client and tool modules the product imports remain
+compatible. `npm run test:agent-loop -- <DSH install> <product checkout>` runs the real
+pinned DSH agent loop (agent, loop, pi-ai provider, tools, system prompt, JSONL sessions,
+preset roster and Loader from the product's `release/dsh`) on a workspace preset written by the
+product's own `installProfile`, with the product's workspace policy guard and the SDK-generated
+tool module, against a live SDK application server and a connected page. A deterministic
+OpenAI-compatible fixture model drives seven requests: the model sees only granted tools with
+nested required fields; a versioned write lands; an invalid enum is refused inside DSH before
+any HTTP call; a UI command reaches the page; an `external` tool becomes a pending proposal
+that executes exactly once after the owner approves over HTTP; an ungranted tool is refused by
+the product guard; the turn ends `completed`.
+
+`npm run test:installed -- <built product> <python with websocket-client>` is the installed
+runtime proof (Linux). It boots the product's pinned DSH 0.1.5-rc.1 as a real `dsh --profile
+web` host in an isolated home, installs the Augmentor integration with the product's own
+`services/dsh/setup.py` (check, install, restart, check, save), registers the application with
+`augmentor-app register` through a runtime descriptor, serves the maintained panel through the
+product's embedding service and native host behind the SDK proxy, and opens an SDK host page in
+Chromium. With the paired product change for panel protocol v2 (augmentor-agent `9fa2317` plus
+`apps/browser/embed/entry.mjs`, `extension/host-commands.mjs`, `extension/sidepanel.js`; not
+merged), it passes: the panel advertises the v2 capabilities; a prefill lands in the owner's
+composer and an owner draft is never replaced; `agent.ask('triage')` delivers the premade
+prompt into the panel conversation; the DSH turn calls the app's tools (list, versioned update,
+UI open on the page, external reply as a proposal) and ends `completed`, reported to the page
+as panel events; the owner's approval executes the reply exactly once; `newChat()` works; and a
+background premade prompt runs through the server's AgentRunner, the SDK client and the
+product native host to `completed`. Against the unmodified product panel the same proof fails
+at the capability check, as expected. The model is a deterministic OpenAI-compatible fixture.
+CI still pins product `8a085be`; the other platforms were not run. Not done: a real model, the
+packaged desktop application and its tray/home services, macOS/Windows, merging the product
+change, any live application change, publication. Preview 4 evidence below remains tied to its commits.
+
 ## Preview 4 source candidate — October 3, 2026
 
 The owner-authorized source update is integrated on main through

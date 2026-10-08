@@ -1,17 +1,29 @@
 <!-- Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0 -->
 # Augmentor App SDK
 
-Connect a trusted application to the maintained Augmentor agent. Embed its existing interface, provide an application role and tools, and use the same records from the UI and agent.
+Make an application **agent-native** with the maintained Augmentor agent. Declare your
+app's tools, premade prompts, UI actions and resources once; the agent can then read and
+change your data, drive your pages, render rich results and run background work, while your
+app hands it work through buttons, events and schedules. The owner stays in control through
+server-enforced approvals, a review queue, preferences and an audit trail.
 
-**0.1.0-preview.4 source candidate; latest published package: preview 3.**
-[Runtime alignment](docs/RUNTIME-ALIGNMENT.md) adds capability discovery, an
-experimental Codex app adapter and platform bootstrap/private-path support.
-Customer platform/harness qualification and existing live deployments are
-tracked separately. Requires Node 24.14+ and a compatible managed Augmentor runtime exposing `augmentor-app/1`. This package does not include the Augmentor UI, model runtime, Google credentials or another agent loop. A stock older Augmentor installation is not sufficient; `augmentor-app doctor` reports that explicitly.
+**0.2.0-preview.1 source (this branch); latest published package: preview 3.** 0.2 is
+unpublished and verified with synthetic fixtures, a mock runtime, real Chromium and the real
+DSH 0.1.5-rc.1 descriptor compiler; it is not yet qualified against an installed Augmentor
+runtime. The 0.1 API and protocol `augmentor-app/1` are unchanged, and no live application
+is changed by this source. Requires Node 24.14+ and a compatible managed Augmentor runtime
+exposing `augmentor-app/1`. This package does not include the Augmentor UI, model runtime,
+Google credentials or another agent loop.
 
-The initial target is a single owner installing trusted applications on Linux, including an application backend reached through a private NAS tunnel. This is not a sandbox for untrusted JavaScript or a multi-tenant hosting system. Pi remains outside scope; Codex is experimental in the source candidate. Voice is experimental, disabled by default and independently switchable per workspace; cloud voice providers, including OpenAI, are deferred.
+The target is a single owner installing trusted applications, on the same machine as
+Augmentor or reached through a private network tunnel. This is not a sandbox for untrusted
+JavaScript or a multi-tenant hosting system; hosted multi-user apps are a design in progress.
+Pi remains outside scope; Codex is experimental. Voice is experimental, disabled by default
+and independently switchable per workspace; cloud voice providers are deferred.
 
 - **[Start here: agent integration guide](docs/AGENT-INTEGRATION.md)**: a self-contained workflow and a ready-to-use task for a coding agent.
+- **[Make an app agent-native (0.2 guide)](docs/GUIDE.md)**: every capability class with code.
+- [Migration from 0.1](docs/MIGRATION-0.2.md) and the [embedded panel protocol v2](docs/PANEL-PROTOCOL.md).
 - [API reference](docs/API.md), [acceptance checklist](docs/ACCEPTANCE.md) and [troubleshooting](docs/TROUBLESHOOTING.md).
 - [Quick start](docs/QUICKSTART.md): package, runtime, manifest, registration, tools and embed.
 - [Connection contract](docs/CONTRACT.md): identities, permissions, errors, recovery and data ownership.
@@ -19,6 +31,26 @@ The initial target is a single owner installing trusted applications on Linux, i
 - [Qualification and handoff](docs/HANDOFF.md): reproducible tests and remaining gates.
 - [Readiness](docs/READINESS.md) and [exact qualification](docs/QUALIFICATION.md): feasibility, release evidence and rollout status.
 - [Compatibility maintenance](docs/MAINTENANCE.md): keep SDK contracts, product adapters, settings and qualification aligned as Augmentor changes.
+- In the repository only: [analysis](analysis/) (findings, research, capability catalogue, plan, app upgrade plans) and the runnable [studio-desk example](examples/studio-desk/README.md).
+
+## What 0.2 adds
+
+| Capability | API |
+| --- | --- |
+| One declaration → manifest, runtime descriptors, MCP, reference | `defineApp`, `defineTool`, `augmentor-app manifest/check/describe` |
+| Tools with effect, approval policy, presenter, limits, idempotency, audit | `createToolkit`, `createToolEndpoint` |
+| Proposals and the owner's review queue | `ProposalStore`, `createReviewEndpoint`, `mountReviewQueue` |
+| Agent steers the page (navigate, open, highlight, prefill, notify, show, ask, view) | `createUiBridge`, `connectPage` |
+| Trusted generative UI catalogue | `renderAgentUi`, `uiSpecSchema` |
+| Premade prompts, modes and "Ask" buttons | `definePrompt`, `defineMode`, `createAgent`, `bindPromptButtons` |
+| Headless runs that await the turn | `AgentRunner` |
+| Event triggers, schedules (cron + time zone), watchers, kill switch | `createAutomation` |
+| Change feed instead of polling | `EventHub`, `createEventStream`, `subscribe` |
+| Preferences with provenance and decision feedback | `PreferenceStore`, `defineApp({memory: true})` |
+| MCP server for other agent hosts | `createMcpServer` |
+| One call for Node or fetch servers | `createAugmentorServer` |
+| Mock runtime and scripted model | `@augmentor/app-sdk/testing` |
+| Single-file browser module and TypeScript types | `dist/augmentor-browser.mjs`, `types/` |
 
 ## Install
 
@@ -28,9 +60,9 @@ The two qualified live apps remain on preview 2; this onboarding release does no
 redeploy them. The repository and release assets are public; no GitHub account is needed to read
 the source or download the SDK.
 Use the current documentation on main for deployment notes. For the released
-DSH/Linux baseline, check out `v0.1.0-preview.3` before building. Current source
-builds `0.1.0-preview.4`; use the immutable paired product revision in
-[runtime alignment](docs/RUNTIME-ALIGNMENT.md) for development qualification.
+DSH/Linux baseline, check out `v0.1.0-preview.3` before building. This branch builds
+`0.2.0-preview.1`; the preview 4 qualification in
+[runtime alignment](docs/RUNTIME-ALIGNMENT.md) applies to its recorded commits, not to 0.2.
 In either checkout, run:
 
 ```sh
@@ -40,9 +72,14 @@ npm run test:package
 npm pack
 ```
 
-Use a source-built preview 4 archive only for the development candidate. The
-published preview 3 archive and existing live apps remain unchanged. Installing
-preview 4 alone does not add its adapters to an older Augmentor installation.
+0.2 adds optional checks: `npm run test:browser` and `npm run test:example` (Chromium via
+Playwright), `npm run check:types` (TypeScript), `npm run test:agent-loop -- <DSH install> <product
+checkout>` (the real DSH agent loop on a product-installed workspace preset),
+`npm run test:installed -- <built product> <python>` (real DSH web host, product installer,
+maintained panel in Chromium), and `npm run build` to regenerate the
+single-file browser bundle. Use a source-built archive only for development. The published
+preview 3 archive and existing live apps remain unchanged. Installing a newer SDK alone
+does not add product adapters to an older Augmentor installation.
 
 Install the archive matching the checkout's package version in your application
 using `npm install /absolute/path/to/the-package.tgz`. No public npm package is
@@ -58,17 +95,19 @@ From your application directory after installing the package:
 ./node_modules/.bin/augmentor-app doctor
 ```
 
-The scaffold includes a read-only tool, authenticated backend wiring, maintained
-panel mount and private-config example. Supply the application's real record
-reader and owner-session check, then follow the [complete quick start](docs/QUICKSTART.md).
+The default scaffold includes a read-only tool, authenticated backend wiring, maintained
+panel mount and private-config example. `init --template app` scaffolds the 0.2
+agent-native kit instead (definition, generated manifest and descriptors, server and page
+wiring). Supply the application's real data layer and owner-session check, then follow the
+[complete quick start](docs/QUICKSTART.md) and the [0.2 guide](docs/GUIDE.md).
 `plan` previews registration without changing state. Doctor checks the selected
 runtime contract; actual readiness requires the documented live checks.
 
 ## Ownership
 
-Augmentor owns its maintained UI, DSH adapter, sessions, policy, workspace memory bindings and runtime release lifecycle. Your application owns its authenticated API, business rules, connectors, data, artifacts, schedules and completion validators. The SDK owns the integration contract and reusable client, proxy, tool and job helpers.
+Augmentor owns its maintained UI, DSH adapter, sessions, policy, workspace memory bindings and runtime release lifecycle. Your application owns its authenticated API, business rules, connectors, data, artifacts and completion validators, and decides what the agent may do. The SDK owns the integration contract and the reusable client, proxy, toolkit, approval, UI bridge, prompt, automation, change-feed and test helpers.
 
-The framework-neutral browser module is `@augmentor/app-sdk/browser`; server-side exports use Node. Optional `OperationStore` and `JobStore` helpers use SQLite. Existing applications can retain their own durable stores when they enforce the same contract.
+The framework-neutral browser module is `@augmentor/app-sdk/browser` (or the single file `@augmentor/app-sdk/browser.bundle`); server-side exports use Node. The optional stores use SQLite. Existing applications can retain their own durable stores when they enforce the same contract.
 
 ## License
 

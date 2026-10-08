@@ -29,3 +29,17 @@ changing model selection or restarting shared work. Start from the exact failure
 When reporting a problem, include SDK version, non-secret error code, protocol,
 app/profile ID if shareable, tested source/running release, and a minimal synthetic
 reproduction. Exclude credentials, private records, prompts and raw configuration.
+
+## 0.2
+
+| Symptom | Cause and fix |
+| --- | --- |
+| A tool is missing in Augmentor after editing `app.mjs` | `tools.json` is stale or DSH cached the module. Run `augmentor-app manifest` and `check`, re-register if names changed, restart Augmentor, start a new chat. |
+| `INVALID_TOOL ... not supported by the value schema DSL` from DSH | A tool module bypassed the SDK compiler. Use `createToolModule`/`registerDshTools` from 0.2. |
+| Tool result `approval_required` | Expected: the owner decides in the review queue (`mountReviewQueue`). Configure `approval` or `policy` if the tool should run directly. |
+| `APPROVAL_UNAVAILABLE` | An approval-gated tool ran without a proposal store; use `createAugmentorServer` or pass `proposals` to `createToolkit`. |
+| `UI_UNAVAILABLE` / `UI_TIMEOUT` | No admitted page is open, or the page handler did not answer. Call `connectPage` on load; implement the action or return `UNSUPPORTED_ACTION`. |
+| Panel blank after upgrading from preview 2 | The app serves `browser.mjs` as a single file (F1). Serve `dist/augmentor-browser.mjs` or `augmentor-app bundle`. |
+| `BUNDLE_MODIFIED` / `BUNDLE_STALE` | A vendored bundle was edited or is from another SDK build; re-run `augmentor-app bundle`. |
+| Background run stays `running` | The runtime is unreachable or waiting for an interaction; check `/api/augmentor/activity`, the interaction policy and `AgentRunner` timeout. |
+| Automation does nothing | Not started (`server.start()`), paused (`/api/augmentor/automation`), over budget, in quiet hours, or the job key already ran. |

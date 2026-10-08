@@ -7,10 +7,13 @@ export function createProxy({profile, origin, tokenFile, authorize, socketPath, 
   check(/^[a-z][a-z0-9-]{0,63}$/.test(profile) && new URL(origin).origin === origin, 'INVALID_PROXY', 'Profile and exact origin required');
   check(typeof authorize === 'function', 'INVALID_PROXY', 'An owner authorization callback is required');
   check(/^\/[a-zA-Z0-9/_-]+\/$/.test(path), 'INVALID_PROXY', 'Invalid public proxy path');
+  // Reject dot segments (raw or encoded) instead of relying on the upstream to normalise them.
+  const traversal = url => {const p = url.split(/[?#]/)[0]; let d; try {d = decodeURIComponent(p);} catch {return true;}
+    return /(^|\/)\.\.?(\/|$)/.test(p) || /(^|\/)\.\.?(\/|$)/.test(d) || d.includes('\\') || d.includes('\0');};
   const allowed = async req => {
-    if (req.headers.host !== new URL(origin).host || !req.url?.startsWith(path) || req.headers['sec-fetch-site'] === 'cross-site') return false;
+    if (req.headers.host !== new URL(origin).host || !req.url?.startsWith(path) || traversal(req.url) || req.headers['sec-fetch-site'] === 'cross-site') return false;
     if (req.headers.origin && req.headers.origin !== origin) return false;
-    return await authorize(req) === true;
+    try {return await authorize(req) === true;} catch {return false;}
   };
   const options = (req, upgrade = false) => {
     const token = readFileSync(tokenFile, 'utf8').trim();
@@ -29,7 +32,8 @@ export function createProxy({profile, origin, tokenFile, authorize, socketPath, 
         if (!await allowed(req)) {res.writeHead(403); res.end(); return;}
         const upstream = http.request(options(req), reply => {
           const headers = {...reply.headers}; delete headers['set-cookie'];
-          res.writeHead(reply.statusCode, headers); reply.on('error', () => res.destroy()); reply.pipe(res);
+          // Streaming responses may be idle for long periods once headers arrive.
+          upstream.setTimeout(0); res.writeHead(reply.statusCode, headers); reply.on('error', () => res.destroy()); reply.pipe(res);
         });
         upstream.setTimeout(15000, () => upstream.destroy()); upstream.on('error', () => unavailable(res));
         req.on('aborted', () => upstream.destroy()); res.on('close', () => upstream.destroy()); req.pipe(upstream);

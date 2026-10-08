@@ -20,6 +20,7 @@ export class OperationStore {
   }
   settle(scope, id, state, result) {
     check(['completed','rejected'].includes(state), 'INVALID_STATE', 'Only confirmed outcomes may settle an operation');
+    result = result === undefined ? null : result;
     check(this.db.prepare('UPDATE operations SET state=?,result=?,updated_at=? WHERE scope=? AND id=? AND state=?').run(state,JSON.stringify(result),new Date().toISOString(),scope,id,'unknown').changes === 1, 'OPERATION_CONFLICT', 'Operation is missing or already settled');
     return this.get(scope,id);
   }
@@ -30,7 +31,7 @@ export class OperationStore {
       throw new AugmentorError(row.state === 'rejected' ? 'OPERATION_REJECTED' : 'UNKNOWN_OUTCOME', 'Operation was not repeated. Inspect or reconcile its receipt.', {scope, operationId:id});
     }
     // Errors leave unknown: a thrown timeout does not prove a remote write failed.
-    const result = await action(); this.settle(scope,id,'completed',result); return result;
+    const result = (await action()) ?? null; this.settle(scope,id,'completed',result); return result;
   }
   close() {this.db.close();}
 }

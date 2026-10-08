@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Copyright © 2026 Manolo Remiddi · SPDX-License-Identifier: LicenseRef-Augmentor-MIT-Resale-1.0
 import {readFileSync,writeFileSync,mkdirSync,existsSync,mkdtempSync,rmSync,chmodSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
 import {resolve,dirname,join,isAbsolute} from 'node:path';
 import {homedir,tmpdir} from 'node:os';
 import {randomBytes} from 'node:crypto';
@@ -8,21 +10,34 @@ import {spawnSync} from 'node:child_process';
 import {validateManifest,validateApplication,workspaceProfile} from '../src/manifest.mjs';
 import {discoverRuntime,runtimeLaunch} from '../src/runtime.mjs';
 import {runtimePaths} from '../src/platform.mjs';
-import {scaffold} from '../src/scaffold.mjs';
+import {scaffold,scaffoldApp} from '../src/scaffold.mjs';
 import {check} from '../src/errors.mjs';
+import {createToolkit} from '../src/toolkit.mjs';
+import {checkToolkit} from '../src/testing.mjs';
+import {GRANTS} from '../src/app.mjs';
 const usage = `Augmentor App SDK (DSH or experimental Codex / augmentor-app/1)
   --help | --version
-  init [directory] [--id app-id] [--name "App name"] [--harness dsh|codex]
+  init [directory] [--id app-id] [--name "App name"] [--harness dsh|codex] [--template minimal|app]
   validate manifest.json [--schema-only]
   doctor [runtime-descriptor] [--harness dsh|codex] [--runtime-root installed-root]
   plan manifest.json private-install.json
   register manifest.json private-install.json
+  manifest app-definition.mjs [--out app-root]
+  check app-definition.mjs
+  describe app-definition.mjs [--format markdown|llms]
+  bundle destination.mjs | bundle --verify vendored.mjs
 
 init writes an integration scaffold; it never registers or starts a runtime.
 validate checks the schema and referenced files without importing tool modules.
 doctor checks the selected descriptor, not running services or model readiness.
 plan previews identity and grants without writing credentials or profiles.
 register changes private workspace/preset configuration; it does not restart services.
+manifest imports your defineApp() module (it must not start servers) and writes
+augmentor.app.json plus the runtime tool descriptors (tools.json) beside the tool module.
+check reports drift between the definition, manifest and descriptors, and instruction
+files that mention tools the workspace does not declare or grant.
+describe prints a generated reference (markdown) or llms.txt.
+bundle copies the single-file browser module with a version stamp, or verifies a copy.
 Use the local CLI from your installed package. Read docs/AGENT-INTEGRATION.md.`;
 const [command,...args]=process.argv.slice(2);
 const readJSON = file => {
@@ -113,20 +128,88 @@ async function main(){
     }finally{rmSync(temp,{recursive:true,force:true});}
     return;
   }
+  if(['manifest','check','describe'].includes(command)){
+    check(args[0]&&!args[0].startsWith('--'),'INVALID_REQUEST',`Usage: augmentor-app ${command} app-definition.mjs`);
+    const definitionFile=resolve(args[0]);
+    const mod=await import(pathToFileURL(definitionFile).href);
+    const app=mod.default??mod.app;
+    check(app?.kind==='app','INVALID_REQUEST','The module must export defineApp() as default or as `app`');
+    const option=name=>{const i=args.indexOf(name);return i>0?args[i+1]:undefined;};
+    if(command==='describe'){
+      const format=option('--format')||'markdown';
+      check(['markdown','llms'].includes(format),'INVALID_REQUEST','Format is markdown or llms');
+      if(format==='markdown'){console.log(app.reference());return;}
+      const d=app.descriptors();
+      console.log([`# ${app.name}`,'',`> ${app.description||app.name+' exposes its features to the Augmentor agent.'}`,'','## Tools','',...d.tools.map(t=>`- ${t.name}: ${t.description.split('\n')[0]} (${t.effect}${t.approval!=='never'?', needs approval':''})`),'','## Prompts','',...app.prompts.list().map(p=>`- ${p.id}: ${p.title}`)].join('\n'));return;
+    }
+    // Manifest paths are relative to the application root: run from there or pass --out.
+    const root=resolve(option('--out')||'.');
+    const manifest=app.manifest(),descriptors=app.descriptors();
+    const toolsJson=join(root,dirname(manifest.tools[0].module),'tools.json'),manifestFile=join(root,'augmentor.app.json');
+    if(command==='manifest'){
+      mkdirSync(dirname(toolsJson),{recursive:true});
+      writeFileSync(manifestFile,JSON.stringify(manifest,null,2)+'\n');writeFileSync(toolsJson,JSON.stringify(descriptors,null,2)+'\n');
+      console.log(`Wrote augmentor.app.json (${manifest.tools[0].names.length} tools, ${manifest.permissions.tools.length} product grants) and ${relativePath(root,toolsJson)} (fingerprint ${descriptors.fingerprint.slice(0,12)}). Re-register and restart Augmentor to load changed tools.`);return;
+    }
+    const problems=[],warnings=[];
+    const read=file=>{try{return JSON.parse(readFileSync(file,'utf8'));}catch{return null;}};
+    const current=read(manifestFile),currentTools=read(toolsJson);
+    if(!current)problems.push('augmentor.app.json is missing; run augmentor-app manifest');
+    else if(JSON.stringify(current)!==JSON.stringify(manifest))problems.push('augmentor.app.json differs from the definition; run augmentor-app manifest');
+    if(!currentTools)problems.push(`${relativePath(root,toolsJson)} is missing; run augmentor-app manifest`);
+    else if(currentTools.fingerprint!==descriptors.fingerprint)problems.push(`${relativePath(root,toolsJson)} is stale (tool definitions changed); run augmentor-app manifest, then re-register`);
+    for(const p of checkToolkit(createToolkit({tools:app.allTools(),proposals:{}})))warnings.push(p);
+    const declared=new Set([...descriptors.tools.map(t=>t.name),...manifest.permissions.tools]);
+    const productTools=new Set([...Object.values(GRANTS).flat(),'bash','fs_read','fs_write','fs_search','str_replace_editor','job_output','job_list','job_kill']);
+    for(const file of manifest.instructions){
+      let text='';try{text=readFileSync(join(root,file),'utf8');}catch{problems.push(`Instruction file ${file} is missing`);continue;}
+      for(const name of new Set(text.match(/\b[a-z][a-z0-9]*_[a-z0-9_]+\b/g)||[])){
+        if(declared.has(name))continue;
+        if(name.startsWith(app.prefix+'_'))problems.push(`${file} mentions ${name}, which the app does not declare`);
+        else if(productTools.has(name))warnings.push(`${file} mentions ${name}, which this workspace does not grant`);
+      }
+    }
+    for(const w of warnings)console.log('warning: '+w);
+    for(const p of problems)console.error('error: '+p);
+    if(problems.length){process.exitCode=1;return;}
+    console.log(`${app.id}: definition, manifest and descriptors agree (${descriptors.tools.length} tools, fingerprint ${descriptors.fingerprint.slice(0,12)})`);return;
+  }
+  if(command==='bundle'){
+    const source=readFileSync(new URL('../dist/augmentor-browser.mjs',import.meta.url),'utf8');
+    const digest=createHash('sha256').update(source).digest('hex');
+    if(args[0]==='--verify'){
+      check(args[1],'INVALID_REQUEST','Usage: augmentor-app bundle --verify vendored.mjs');
+      const copy=readFileSync(resolve(args[1]),'utf8');
+      const stamp=/^\/\/ augmentor-app-sdk-bundle sha256=([a-f0-9]{64}) version=(\S+)\n/.exec(copy);
+      check(stamp,'BUNDLE_UNSTAMPED','This file was not produced by augmentor-app bundle');
+      const body=copy.slice(stamp[0].length);
+      check(createHash('sha256').update(body).digest('hex')===stamp[1],'BUNDLE_MODIFIED',`The vendored bundle was edited after it was stamped (version ${stamp[2]})`);
+      check(stamp[1]===digest,'BUNDLE_STALE',`The vendored bundle is ${stamp[2]}; this SDK ships a different build`);
+      console.log(`Vendored bundle matches this SDK (${stamp[2]})`);return;
+    }
+    check(args.length===1&&!args[0].startsWith('--'),'INVALID_REQUEST','Usage: augmentor-app bundle destination.mjs');
+    const version=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).version;
+    mkdirSync(dirname(resolve(args[0])),{recursive:true});
+    writeFileSync(resolve(args[0]),`// augmentor-app-sdk-bundle sha256=${digest} version=${version}\n`+source);
+    console.log(`Wrote ${args[0]} (${version}). Serve it to the owner's pages; verify later with augmentor-app bundle --verify.`);return;
+  }
   if(command==='init'){
     let directory='.',index=0;const options={};
     if(args[0] && !args[0].startsWith('--'))directory=args[index++];
     while(index<args.length){
       const flag=args[index++],value=args[index++];
-      check(['--id','--name','--harness'].includes(flag) && value && !value.startsWith('--') && !Object.hasOwn(options,flag.slice(2)),
-        'INVALID_REQUEST','Usage: augmentor-app init [directory] [--id app-id] [--name "App name"] [--harness dsh|codex]');
+      check(['--id','--name','--harness','--template'].includes(flag) && value && !value.startsWith('--') && !Object.hasOwn(options,flag.slice(2)),
+        'INVALID_REQUEST','Usage: augmentor-app init [directory] [--id app-id] [--name "App name"] [--harness dsh|codex] [--template minimal|app]');
       options[flag.slice(2)]=value;
     }
-    const result=scaffold(directory,options);
+    const {template='minimal',...rest}=options;
+    check(['minimal','app'].includes(template),'INVALID_REQUEST','Template is minimal or app');
+    const result=template==='app'?await scaffoldApp(directory,rest):scaffold(directory,rest);
     console.log(`Created ${result.files.length} integration files for ${result.id}. Read augmentor/INTEGRATION.md. No runtime or credentials changed.`);return;
   }
   throw Error(usage);
 }
+const relativePath=(from,to)=>to.startsWith(from+'/')?to.slice(from.length+1):to;
 main().catch(error=>{
   console.error(error.code?error.code+': '+error.message:error.message);
   for(const detail of error.details?.errors||[])console.error(`  ${detail.instancePath||'/'}: ${detail.message}`);

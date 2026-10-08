@@ -1,0 +1,9 @@
+{
+  "origin": "http://127.0.0.1:8000",
+  "toolConfig": {
+    "__PLUGIN_ID__": {
+      "url": "http://127.0.0.1:8000/api/augmentor/tool",
+      "tokenFile": "/absolute/path/to/private/runtime.token"
+    }
+  }
+}

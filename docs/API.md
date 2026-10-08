@@ -160,3 +160,73 @@ snapshot. DSH retains its existing latest-session selection behavior; inspect
 Context is evidence, never instructions or a grant. Tools must fetch current
 records/revisions before a write. Low-level Codex branch-status requests must
 include both the owning parent `sessionId` and intended child `newSessionId`.
+
+## 0.2 additive API (0.2.0-preview.1 source)
+
+Everything below is additive; the sections above keep their signatures. Full examples are
+in [GUIDE.md](GUIDE.md); declarations are in `types/`.
+
+### CLI
+
+| Command | Effect |
+| --- | --- |
+| `init [dir] --template app` | Agent-native starter: `augmentor/app.mjs`, role, runtime `tools.mjs`, `server.mjs`, `page.mjs`; generates `augmentor.app.json` and `augmentor/tools.json` from the written definition |
+| `manifest app.mjs [--out root]` | Imports the `defineApp()` module (default export or `app`) and writes the manifest and `tools.json` beside the manifest's tool module. Run from the app root |
+| `check app.mjs` | Fails on stale manifest/descriptors or undeclared app tools named in instruction files; warns on product tools that are not granted and on risky declarations |
+| `describe app.mjs [--format markdown\|llms]` | Generated reference or `llms.txt` |
+| `bundle file.mjs` / `bundle --verify file.mjs` | Copy the single-file browser module with a sha256/version stamp; detect stale or edited copies |
+
+### Declarations
+
+- `defineApp({id, name, description?, harness?, instructions, tools, prompts?, modes?, uiActions?, resources?, grants?, voice?, ui = true, builtins = true, memory = false, routes?})` →
+  `{manifest(), descriptors(), reference(), allTools(), prompts, resources, …}`. Tool names
+  must start with `<id with _>_`. `grants` accepts product tool names or `GRANTS` keys
+  (`memory`, `web`, `ask`, `browserObserve`, `todo`, `goals`, `plan`, `subagents`, `workflow`,
+  `skills`). Built-ins: `<prefix>_reference`, `<prefix>_proposal_status`, `<prefix>_read_resource`
+  (when resources exist), UI tools (when `ui`), preference tools (when `memory`).
+- `defineTool({name, description, title?, input?, output?, effect = 'write', approval?, idempotent?, untrustedOutput?, summary?, preview?, subject?, undo?, limits?, timeoutMs?, examples?, tags?, ui?, hidden?, handler})`.
+  `effect` ∈ `read | draft | write | external | destructive`; default approval: `external`
+  and `destructive` always, others never. `approval` ∈ `'never' | 'always' | 'review' | (input, ctx) => boolean`.
+  Handlers receive `(input, ctx)` with `ctx.services`, `sessionId`, `operationId`, `principal`,
+  `signal`, `emit(type, data)` and `progress(fraction, message)`.
+- `definePrompt({id, title, template, variables?, context?, run = 'either', session = 'current', mode?, model?, placement?, tags?})`, `defineMode({id, title, instructions})`.
+- `defineUiAction({name, description, input?, effect = 'read' | 'draft', timeoutMs?})`.
+- `defineResource({uri: 'app://kind/{id}', name, read(params, context), description?, mimeType?})`.
+
+### Server
+
+- `createAugmentorServer(app, {origin, authorizeOwner, runtimeTokenFile | authenticateRuntime, dataDir?, stores?, services?, policy?, client?, interactions?, proxy?, mcp?, automation?, basePath = '/api/augmentor', eventTypes?, allowedHosts?})` →
+  `{node(req, res) → Promise<boolean>, upgrade(req, socket, head) → boolean, fetch(request) → Promise<Response | null>, start(), close(), toolkit, events, proposals, activity, operations, jobs, preferences, runner, automation, bridge, mcp}`.
+  `authorizeOwner(request)` receives `{method, url, headers, raw}` and returns an owner ID,
+  `true` or `false`.
+- `createToolkit({tools, proposals?, activity?, events?, operations?, services?, policy?: {approval?, trust?}, appName?})` →
+  `call(name, input, {sessionId, operationId?, callId?, principal?, signal?})`,
+  `decide(id, {decision: 'approve' | 'edit' | 'reject', args?, note?, actor?})`, `executeProposal(id)`,
+  `invoke(name, input)` (app-initiated, no approval), `list()`, `definitions()`, `fingerprint()`, `describe()`.
+  An approval-gated call resolves to `{status: 'approval_required', proposalId, summary, message}`.
+- `createToolEndpoint({toolkit, tokenFile | authenticate, allowedHosts?, maxBytes?})`, `createReviewEndpoint({toolkit, proposals, origin, authorize, path?})`,
+  `createEventStream(hub, {authorize, types?, filter?, project?})`, `createUiBridge({authorize, origin, path?, actions?, timeoutMs?, events?, singleOwner = true})`,
+  `createMcpServer({toolkit, prompts?, resources?, tokenFile | authenticate, name?, version?, instructions?})` — each `{node, fetch}`.
+- `ProposalStore`, `ActivityLog` (`record`, `list`, `spans`), `EventHub` (`publish`, `subscribe`, `since`, `next`), `PreferenceStore` (`set`, `get`, `confirm`, `remove`, `list`, `observe`, `feedback`); `JobStore` gains `find(key)` and `list({state, keyPrefix})`.
+- `AgentRunner({client, interactions = 'reject' | fn, events?, activity?, pollMs?, timeoutMs?})` → `run({text, context?, sessionId?, title?, model?, operationId?, mode?, attachments?, timeoutMs?, signal?, onEvent?, subject?})`
+  resolving to `{sessionId, operationId, status, reason, text, toolCalls, interactions, durationMs}`.
+- `AugmentorClient` gains `history`, `getSession`, `models`, `selectModel`, `rename`, `answerInteraction`, `prompt({mode: 'queue' | 'steer', attachments})` and emits notifications by method name (`session.event`, `session.status`, `approval.requested`, `question.requested`).
+- `createAutomation({runner, jobs, events, prompts?, activity?, maxConcurrent = 1, leaseMs})` → `on(types, rule)`, `schedule(name, cron, rule)`, `watch(name, rule)`, `trigger(name, data)`, `start`, `stop`, `pause`, `resume`, `status`.
+  Rules: `{prompt, vars?, context?, filter?, key?, batch?, quiet?, budget?, session?, expect?, title?, model?, timeoutMs?}`.
+- `parseCron`, `nextRun`, `previousRun`, `inQuietHours`, `localDate` (five-field cron, IANA time zones).
+- `createToolModule({pluginId, descriptors})` from `@augmentor/app-sdk/dsh`: the runtime module (`name`, `inject`, `apply`, `applicationTools`).
+
+### Browser (`@augmentor/app-sdk/browser`, single file: `browser.bundle`)
+
+- `mountAugmentor({..., allow?, theme?: {mode, accent, accentBrightness, neutral, neutralBrightness}, onEvent?, onReady?})` adds `ready`, `capabilities`, `supports(name)`, `prompt(text, {send, fresh, context})`, `newChat()`, `focus()` (v2 panel features; see [PANEL-PROTOCOL.md](PANEL-PROTOCOL.md)).
+- `connectPage({endpoint?, actions?, describeView?, components?, onAction?, webmcp = true})` → `{pageId, updateView, disconnect}`.
+- `renderAgentUi(spec, {onAction?, onSubmit?, components?})`, `showToast`, `showOverlay`, `highlight`, `lineDiff`.
+- `mountReviewQueue(container, {endpoint?, eventsUrl?, state?, renderPreview?, labels?, onDecision?})`.
+- `createAgent({endpoint?, panel?})` → `{prompts(), ask(id, vars, {run, mode, context}), run(runId)}`; `bindPromptButtons(root, agent, {onResult, onError})`; `subscribe(url, handler, {types})`.
+
+### Testing (`@augmentor/app-sdk/testing`)
+
+`createMockRuntime({profile?, harness?, tools?, script?, features?, models?})` → `{client(), sessions, close(), on('call' | 'event' | 'turn')}`;
+`scriptedModel(steps)`; `checkToolkit(toolkit)`. Synthetic only: proves wiring, not model behaviour or a real runtime.
+
+New error codes: `APPROVAL_UNAVAILABLE`, `RATE_LIMITED`, `CONFIGURATION_UNAVAILABLE`, `UI_UNAVAILABLE`, `UI_TIMEOUT`, `UNSUPPORTED_ACTION`, `INVALID_EVENT`, `INVALID_PROMPT`, `INVALID_SCHEDULE`, `INVALID_RESOURCE`, `CONFLICT`, `BUNDLE_UNSTAMPED`, `BUNDLE_MODIFIED`, `BUNDLE_STALE`.

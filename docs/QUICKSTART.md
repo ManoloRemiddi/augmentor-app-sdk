@@ -11,6 +11,10 @@ existing trusted single-owner Node application. The scaffold is integration code
 not a separate reference app. Replace example IDs/ports with the target app's
 stable identity and actual origin. Preserve existing identities during migration.
 
+> **0.2 source:** for the agent-native kit (approvals, UI control, prompts, automation,
+> change feed), use `init --template app` and follow [GUIDE.md](GUIDE.md) alongside the
+> steps below; registration, tokens and acceptance are the same.
+
 ## 1. Install the pinned public release
 
 Requirements: Node >=24.14, an existing application

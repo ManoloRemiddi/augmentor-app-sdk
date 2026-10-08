@@ -179,12 +179,11 @@ in place. Shared DSH, memory, speech and unrelated native windows were not resta
   the post-review collections and drafts. The SDK test itself made no business
   edits, sent no email and published no comments.
 
-Backups are private: local profile/preset/preferences and YouTube online SQLite
-snapshot under `~/.local/state/augmentor/sdk-cutover-20260930`; NAS verified online
-snapshot at `/data/backups/pre-app-sdk-20260930`, source archive under
-`/home/manolo/sdk-cutover-20260930`, prior image tagged
-`sponsor-desk:pre-app-sdk-20260930`. Roll integration code and profile/preset
-before-images back together if required. Keep the current business database;
+Backups are private and recorded with the owner, not in this public document: a local
+copy of the profile, preset and preferences with an online SQLite snapshot of the YouTube
+workspace; a verified online snapshot of the NAS application data; a source archive; and
+the prior Sponsor desk image tag, all dated 2026-09-30. Roll integration code and
+profile/preset before-images back together if required. Keep the current business database;
 restoring it would discard later owner work.
 
 ### Testing scope and existing chats
