@@ -11,7 +11,8 @@ const modules = new Map(); const order = [];
 
 function load(file) {
   if (modules.has(file)) return modules.get(file);
-  const source = readFileSync(file, 'utf8');
+  // Git on Windows may check sources out with CRLF; the bundle is always built with LF.
+  const source = readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
   const info = {file, id: '__m' + modules.size, imports: [], exports: [], reexports: [], body: source};
   modules.set(file, info);
   info.body = info.body.replace(/^import\s*\{([^}]*)\}\s*from\s*'(\.[^']+)';\s*$/gm, (_, names, spec) => {
@@ -40,7 +41,7 @@ const exported = top.reexports.map(r => `export const ${r.name} = ${r.from}.${r.
 const output = header + parts.join('\n\n') + '\n\n' + exported.join('\n') + '\n';
 const target = resolve(root, 'dist/augmentor-browser.mjs');
 if (process.argv.includes('--check')) {
-  const current = (() => {try {return readFileSync(target, 'utf8');} catch {return '';}})();
+  const current = (() => {try {return readFileSync(target, 'utf8').replace(/\r\n/g, '\n');} catch {return '';}})();
   if (current !== output) {console.error('dist/augmentor-browser.mjs is out of date; run npm run build'); process.exit(1);}
   console.log('Browser bundle is up to date');
 } else {
